@@ -68,7 +68,7 @@
 
     a {
       text-decoration: none;
-      font-size: 1.4em;
+      font-size: 1.2em;
       font-weight: bold;
       background: linear-gradient(90deg, #ff4ecd, #00ffe5, #ffdc00, #ff4ecd);
       background-size: 300% 300%;
@@ -82,16 +82,49 @@
       text-shadow: 0 0 12px #00ffe5;
     }
 
-    ul {
+    /* Layout for links */
+    .link-sections {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 1000px;
+    }
+
+    .repo-button-wrapper {
+      width: 100%;
+      margin-bottom: 30px;
+    }
+
+    .repo-button {
+      font-size: 1.8em;
+      padding: 20px 30px;
+      display: inline-block;
+      width: 100%;
+      max-width: 100%;
+      text-align: center;
+      border: 2px solid #00ffe5;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(6px);
+      transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+    }
+
+    .repo-button:hover {
+      background: rgba(0, 255, 229, 0.1);
+      transform: scale(1.02);
+      box-shadow: 0 0 25px #00ffe5aa, 0 0 15px #ff4ecd88;
+    }
+
+    ul.link-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       gap: 20px;
       width: 100%;
-      max-width: 1000px;
       list-style: none;
     }
 
-    li {
+    ul.link-grid li {
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid rgba(255, 255, 255, 0.2);
       border-radius: 12px;
@@ -100,27 +133,9 @@
       transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
-    li:hover {
+    ul.link-grid li:hover {
       transform: translateY(-6px);
       box-shadow: 0 0 20px #00ffe5aa, 0 0 10px #ff4ecd88;
-    }
-
-    /* Custom styling for the repo button */
-    .repo-button {
-      font-size: 2em;
-      padding: 20px 30px;
-      display: inline-block;
-      border: 2px solid #00ffe5;
-      border-radius: 10px;
-      background: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(6px);
-      transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
-    }
-
-    .repo-button:hover {
-      background: rgba(0, 255, 229, 0.1);
-      transform: scale(1.05);
-      box-shadow: 0 0 25px #00ffe5aa, 0 0 15px #ff4ecd88;
     }
   </style>
 </head>
@@ -131,21 +146,29 @@
 
 <div class="container">
   <h1>3D Worlds Gaming Links 🎮 (gaming)</h1>
-  <ul>
-    <li><a href="https://github.com/world3dvr/world3dvr.github.io" class="repo-button">Link To All Our Code</a></li>
-    <li><a href="./Aiden/index.html">Aiden</a></li>
-    <li><a href="./Carson/index.html">Carson</a></li>
-    <li><a href="./Cy/index.html">Cy</a></li>
-    <li><a href="./Gavin/index.html">Gavin</a></li>
-    <li><a href="./Jaden/index.html">Jaden</a></li>
-    <li><a href="./Josh/index.html">Josh</a></li>
-    <li><a href="./Logan/index.html">Logan</a></li>
-    <li><a href="./Miles/index.html">Miles</a></li>
-    <li><a href="./Phillip/index.html">Phillip</a></li>
-    <li><a href="./Treasure/index.html">Treasure</a></li>
-    <li><a href="./Wyatt/index.html">Wyatt</a></li>
-    <li><a href="https://dafakebean.github.io/home/">Ben</a></li>
-  </ul>
+
+  <div class="link-sections">
+    <!-- Repo Button -->
+    <div class="repo-button-wrapper">
+      <a href="https://github.com/world3dvr/world3dvr.github.io" class="repo-button">Link To All Our Code</a>
+    </div>
+
+    <!-- Grid of student links -->
+    <ul class="link-grid">
+      <li><a href="./Aiden/index.html">Aiden</a></li>
+      <li><a href="./Carson/index.html">Carson</a></li>
+      <li><a href="./Cy/index.html">Cy</a></li>
+      <li><a href="./Gavin/index.html">Gavin</a></li>
+      <li><a href="./Jaden/index.html">Jaden</a></li>
+      <li><a href="./Josh/index.html">Josh</a></li>
+      <li><a href="./Logan/index.html">Logan</a></li>
+      <li><a href="./Miles/index.html">Miles</a></li>
+      <li><a href="./Phillip/index.html">Phillip</a></li>
+      <li><a href="./Treasure/index.html">Treasure</a></li>
+      <li><a href="./Wyatt/index.html">Wyatt</a></li>
+      <li><a href="https://dafakebean.github.io/home/">Ben</a></li>
+    </ul>
+  </div>
 </div>
 
 <!-- Particle Script -->
