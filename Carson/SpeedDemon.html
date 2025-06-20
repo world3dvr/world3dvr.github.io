@@ -1,0 +1,271 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html" charset="utf-8" />
+<title>GrayScale.IO</title>
+<script src="cannon.js"></script>
+<script src="babylon.js"></script>
+<script src="babylon.objFileLoader.min.js"></script>
+<script>
+var walls = [];
+function start() {
+var canvas = document.getElementById('renderCanvas');
+var engine = new BABYLON.Engine(canvas, true);
+
+var keys = {};
+window.addEventListener('keydown', function(e) {
+keys[e.key] = true;
+});
+
+window.addEventListener('keyup', function(e) {
+keys[e.key] = false;
+});
+
+var scene = new BABYLON.Scene(engine);
+
+var gravityVector = new BABYLON.Vector3(0,-9.85, 0);
+scene.enablePhysics(gravityVector, new BABYLON.CannonJSPlugin());
+                
+scene.clearColor = new BABYLON.Color3(0, 0, 0);
+
+var xFn = function(t) { return 650 * _xFn(t); }
+var zFn = function(t) { return 650 * _yFn(t); }
+var _xFn = function(t) {var fns = [function(t) {return (Math.pow((1-t),3)*0.025)+(3*t*Math.pow((1-t),2)*0.1275)+(3*Math.pow(t,2)*(1-t)*0.9275)+(Math.pow(t,3)*0.9825)}];var i = Math.max(0,Math.min(0, Math.floor(t * 1)));return fns[i]((t - (i/1)) * 1);};
+var _yFn = function(t) {var fns = [function(t) {return (Math.pow((1-t),3)*0.2)+(3*t*Math.pow((1-t),2)*0.1978125)+(3*Math.pow(t,2)*(1-t)*0.2028125)+(Math.pow(t,3)*0.2028125)}];var i = Math.max(0,Math.min(0, Math.floor(t * 1)));return fns[i]((t - (i/1)) * 1);};
+var playerSphere = BABYLON.MeshBuilder.CreateSphere("playerSphere", {
+segments: 12,
+diameter: 4
+}, scene);
+playerSphere.material = new BABYLON.StandardMaterial("playerSphereMaterial", scene);
+playerSphere.material.diffuseTexture = new BABYLON.Texture('resources/BeachBallColor.jpg', scene);
+playerSphere.position = new BABYLON.Vector3(0, 0, 0);
+
+playerSphere.position = new BABYLON.Vector3(xFn(0), 9, zFn(0));
+
+playerSphere.physicsImpostor = new BABYLON.PhysicsImpostor(playerSphere, BABYLON.PhysicsImpostor.SphereImpostor, {
+mass: 1,
+restitution: 0.9
+}, scene);
+
+playerSphere.physicsImpostor.registerOnPhysicsCollide(
+    walls.map(w => w.physicsImpostor),
+    function(main, collided) {
+        onPlayerHitWall(collided.object);
+      
+    }
+);
+
+
+var camera = new BABYLON.ArcRotateCamera("Camera", 0, (3 * Math.PI) / 8, 20, playerSphere, scene);
+camera.attachControl(canvas, true);
+
+var light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0, 1, 0), scene);
+
+rampAt(xFn, zFn, 0.07, -Math.PI / 4, scene);
+rampAt(xFn, zFn, 0.60, -Math.PI / 4, scene);
+rampAt(xFn, zFn, 0.25, -Math.PI / 4, scene);
+wallAt(xFn, zFn, 0.80, -10, scene);
+wallAt(xFn, zFn, 0.2, 10, scene);
+wallAt(xFn, zFn, 0.40, 10, scene);
+wallAt(xFn, zFn, 0.60, -10, scene);
+rampAt(xFn, zFn, 0.07, -Math.PI / 4, scene);
+wallAt(xFn, zFn, 0.80, 10, scene);
+wallAt(xFn, zFn, 0.70, -10, scene);
+wallAt(xFn, zFn, 0.40, 10, scene);
+wallAt(xFn, zFn, 0.60, 10, scene);
+
+
+
+
+
+scene.registerAfterRender(function() {
+var vel = playerSphere.physicsImpostor.getLinearVelocity();
+playerSphere.physicsImpostor.setLinearVelocity(vel.scale(.98));
+
+var forward = camera.getFrontPosition(1).subtract(camera.position);
+forward.y = 0;
+forward = forward.normalize().scale(1);
+
+var backward = BABYLON.Vector3.TransformCoordinates(forward, BABYLON.Matrix.RotationY(Math.PI));
+
+var left = BABYLON.Vector3.TransformCoordinates(forward, BABYLON.Matrix.RotationY((3 * Math.PI) / 2));
+
+var right = BABYLON.Vector3.TransformCoordinates(forward, BABYLON.Matrix.RotationY(Math.PI / 2));
+
+if (keys.w) {
+playerSphere.applyImpulse(forward, playerSphere.getAbsolutePosition());
+}
+if (keys.s) {
+playerSphere.applyImpulse(backward, playerSphere.getAbsolutePosition());
+}
+if (keys.a) {
+playerSphere.applyImpulse(left, playerSphere.getAbsolutePosition());
+}
+if (keys.d) {
+playerSphere.applyImpulse(right, playerSphere.getAbsolutePosition());
+}
+
+scene.executeWhenReady(() => {
+    const wallImpostors = walls.map(w => w.physicsImpostor);
+    playerSphere.physicsImpostor.registerOnPhysicsCollide(
+    wallImpostors,
+    function(main, collided) {
+        console.log("💥 Player collided with wall:", collided.object.name);
+        onPlayerHitWall(collided.object);
+
+        // Calculate wall normal based on collision
+        const currentT = tLookup(xFn, zFn, 500, playerSphere.position.x, playerSphere.position.z);
+const angle = derivAngle(currentT, xFn, zFn);
+
+// Forward direction of the track at this point
+const forwardAlongTrack = new BABYLON.Vector3(
+    Math.cos(angle),
+    0,
+    Math.sin(angle)
+);
+
+// Apply impulse in track's forward direction
+playerSphere.applyImpulse(forwardAlongTrack.scale(0.08), playerSphere.getAbsolutePosition());
+
+    }
+);
+});
+
+var currentT = tLookup(xFn , zFn, 500, playerSphere.position.x, playerSphere.position.z);
+
+if (currentT > 0.99) {
+win();
+}
+
+if (playerSphere.position.y < -10) {
+lost();
+}
+});
+
+function drawPoint(x, z, zrot, scene) {
+var point = BABYLON.MeshBuilder.CreateBox('point', {
+width: 10,
+height: 0.5,
+depth: 12
+}, scene);
+point.material = new BABYLON.StandardMaterial("pointMaterial", scene);
+point.material.diffuseColor = new BABYLON.Color3(255, 153, 153);
+point.position = new BABYLON.Vector3(x, -5, z);
+point.rotation.y = zrot;
+point.physicsImpostor = new BABYLON.PhysicsImpostor(point, BABYLON.PhysicsImpostor.BoxImpostor, {
+mass: 0,
+restitution: 0.9
+}, scene);
+}
+
+function drawParametric(xFn, zFn, start, end, res, scene) {
+for (var t = start; t <= end; t += ((end - start) / res)) {
+drawPoint(xFn(t), zFn(t), -10, scene);
+}
+}
+
+
+drawParametric(xFn, zFn, 0, 1, 350, scene);
+
+function tLookup(xFn, zFn, res, x, z) {
+var minT = 0;
+var minDist = Infinity;
+for (var t = 0; t <= 1; t += (1 / res)) {
+var dist = Math.pow(x - xFn(t), 2) + Math.pow(z - zFn(t), 2);
+if (dist < minDist) {
+minDist = dist;
+minT = t;
+}
+}
+return minT;
+}
+
+function derivAngle(t, xFn, zFn) {
+function derive(f, x) {
+var h = 2.2e-10;
+return (f(x + h) - f(x - h)) / (2 * h);
+}
+return Math.atan2(derive(zFn, t), derive(xFn, t));
+}
+
+function rampAt(xFn, zFn, t, angle, scene) {
+var ramp = BABYLON.MeshBuilder.CreateBox('ramp', {
+height: 8,
+width: .25,
+depth: 12
+}, scene);
+ramp.material = new BABYLON.StandardMaterial("rampMaterial", scene);
+ramp.material.diffuseColor = new BABYLON.Color3(0, 0, 0);
+ramp.physicsImpostor = new BABYLON.PhysicsImpostor(ramp, BABYLON.PhysicsImpostor.BoxImpostor, {
+mass: 0,
+restitution: 0.9
+}, scene);
+ramp.position = new BABYLON.Vector3(xFn(t), -3.5, zFn(t));
+
+ramp.rotation.z = angle;
+ramp.rotation.y = -derivAngle(t, xFn, zFn);
+}
+
+
+function wallAt(xFn, zFn, t, offset, scene) {
+    var wall = BABYLON.MeshBuilder.CreateBox('wall', {
+        height: 8,
+        width: .25,
+        depth: 12
+    }, scene);
+    angle = -derivAngle(t, xFn, zFn);
+    wall.material = new BABYLON.StandardMaterial("wallMaterial", scene);
+    wall.material.diffuseColor = new BABYLON.Color3(1, 1, 1);
+    wall.physicsImpostor = new BABYLON.PhysicsImpostor(wall, BABYLON.PhysicsImpostor.BoxImpostor, {
+        mass: 0,
+        restitution: 0.9
+    }, scene);
+    wall.position = new BABYLON.Vector3(xFn(t) + (offset * Math.sin(angle)), 0, zFn(t) + (offset * Math.cos(angle)));
+    wall.rotation.y = angle + (Math.PI / 2);
+
+    // Add the wall to the global array
+    walls.push(wall);
+
+    return wall;
+}
+
+engine.runRenderLoop(scene.render.bind(scene));
+window.addEventListener('resize', engine.resize.bind(engine));
+}
+
+function win(){
+window.location.reload();
+}
+
+function lost(){
+window.location.reload();
+}
+function onPlayerHitWall(wallObject) {
+    console.log("Player hit wall:", wallObject.name);
+    // You can do anything here:
+    // alert("Hit a wall!");
+    // lost();
+}
+
+</script>
+<style>
+html, body {
+overflow: hidden;
+width: 100%;
+height: 100%;
+margin: 0;
+padding: 0;
+}
+#renderCanvas {
+width: 100%;
+height: 100%;
+touch-action: none;
+}
+            
+</style>
+
+</head>
+<body onload="start()">
+    <h1>GrayScale.IO-Loading</h1>
+<canvas id="renderCanvas"></canvas>
+</body>
+</html>

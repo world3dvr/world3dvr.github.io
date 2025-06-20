@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Main Page</title>
+  <style>
+    /* Reset and background */
+    body {
+      margin: 0;
+      height: 100vh;
+      background-color: black;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: Arial, sans-serif;
+      position: relative;
+    }
+
+    /* Sparkles animation */
+    .sparkle {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: white;
+      animation: sparkle 2s infinite;
+      opacity: 0.8;
+      border-radius: 50%;
+    }
+
+    @keyframes sparkle {
+      0% { transform: translateY(0) scale(1); opacity: 1; }
+      50% { opacity: 0.3; }
+      100% { transform: translateY(-100px) scale(1.2); opacity: 0; }
+    }
+
+    .sparkle:nth-child(n) {
+      left: calc(100% * var(--x));
+      top: calc(100% * var(--y));
+      animation-delay: calc(2s * var(--d));
+    }
+
+    /* Rainbow button styles */
+    .rainbow-button {
+      position: relative;
+      background-color: black;
+      color: white;
+      padding: 15px 30px;
+      margin: 20px;
+      font-size: 18px;
+      border: 2px solid transparent;
+      cursor: pointer;
+      z-index: 1;
+    }
+
+    .rainbow-button::before {
+      content: '';
+      position: absolute;
+      top: -3px;
+      left: -3px;
+      right: -3px;
+      bottom: -3px;
+      background: linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet, red);
+      background-size: 400%;
+      z-index: -1;
+      filter: blur(4px);
+      animation: rainbow-border 6s linear infinite;
+      border-radius: 8px;
+    }
+
+    .rainbow-button:hover {
+      background-color: #111;
+    }
+
+    @keyframes rainbow-border {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 100% 50%; }
+    }
+
+    /* Bottom Gradient Box */
+    .bottom-box {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 15px 25px;
+      color: white;
+      background-color: black;
+      font-size: 16px;
+      z-index: 10;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    .bottom-box::before {
+      content: '';
+      position: absolute;
+      top: -3px;
+      left: -3px;
+      right: -3px;
+      bottom: -3px;
+      background: linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet, red);
+      background-size: 400%;
+      filter: blur(4px);
+      animation: rainbow-border 6s linear infinite;
+      z-index: -1;
+      border-radius: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Buttons -->
+  <button class="rainbow-button" onclick="location.href='GrayScaleSpeed.html'">Speedrun the first track</button>
+  <button class="rainbow-button" onclick="location.href='SpeedDemon.html'">How fast can you go?</button>
+
+  <!-- Bottom Info Box -->
+  <div class="bottom-box">
+    Welcome to GrayScale
+    Complete levels as fast as you can!
+    walls give you speed boosts,
+    ramps launch you!
+  </div>
+
+  <!-- Sparkles: Add 50 sparkles with random positions -->
+  <script>
+    for (let i = 0; i < 50; i++) {
+      const sparkle = document.createElement('div');
+      sparkle.className = 'sparkle';
+      sparkle.style.setProperty('--x', Math.random());
+      sparkle.style.setProperty('--y', Math.random());
+      sparkle.style.setProperty('--d', Math.random());
+      document.body.appendChild(sparkle);
+    }
+  </script>
+
+</body>
+</html>
