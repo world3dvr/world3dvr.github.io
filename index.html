@@ -49,39 +49,38 @@
     }
 
     @keyframes colorShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
 
     h1 {
-  font-size: 3rem;
-  color: #ffffff;
-  background: linear-gradient(90deg, #ff4ecd, #00ffe5, #ffdc00, #ff4ecd);
-  background-size: 300% 300%;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: colorShift 12s linear infinite;
-  text-shadow: 0 0 15px #ff4ecd, 0 0 30px #ff4ecd;
-  margin-bottom: 40px;
-}
+      font-size: 3rem;
+      color: #ffffff;
+      background: linear-gradient(90deg, #ff4ecd, #00ffe5, #ffdc00, #ff4ecd);
+      background-size: 300% 300%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: colorShift 12s linear infinite;
+      text-shadow: 0 0 15px #ff4ecd, 0 0 30px #ff4ecd;
+      margin-bottom: 40px;
+    }
 
-a {
-  text-decoration: none;
-  font-size: 1.4em;
-  font-weight: bold;
-  background: linear-gradient(90deg, #ff4ecd, #00ffe5, #ffdc00, #ff4ecd);
-  background-size: 300% 300%;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: colorShift 10s linear infinite;
-  transition: text-shadow 0.3s ease;
-}
+    a {
+      text-decoration: none;
+      font-size: 1.4em;
+      font-weight: bold;
+      background: linear-gradient(90deg, #ff4ecd, #00ffe5, #ffdc00, #ff4ecd);
+      background-size: 300% 300%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: colorShift 10s linear infinite;
+      transition: text-shadow 0.3s ease;
+    }
 
-a:hover {
-  text-shadow: 0 0 12px #00ffe5;
-}
-
+    a:hover {
+      text-shadow: 0 0 12px #00ffe5;
+    }
 
     ul {
       display: grid;
@@ -106,9 +105,23 @@ a:hover {
       box-shadow: 0 0 20px #00ffe5aa, 0 0 10px #ff4ecd88;
     }
 
-    
+    /* Custom styling for the repo button */
+    .repo-button {
+      font-size: 2em;
+      padding: 20px 30px;
+      display: inline-block;
+      border: 2px solid #00ffe5;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(6px);
+      transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+    }
 
-    
+    .repo-button:hover {
+      background: rgba(0, 255, 229, 0.1);
+      transform: scale(1.05);
+      box-shadow: 0 0 25px #00ffe5aa, 0 0 15px #ff4ecd88;
+    }
   </style>
 </head>
 <body>
@@ -119,6 +132,7 @@ a:hover {
 <div class="container">
   <h1>3D Worlds Gaming Links 🎮 (gaming)</h1>
   <ul>
+    <li><a href="https://github.com/world3dvr/world3dvr.github.io" class="repo-button">Link To All Our Code</a></li>
     <li><a href="./Aiden/index.html">Aiden</a></li>
     <li><a href="./Carson/index.html">Carson</a></li>
     <li><a href="./Cy/index.html">Cy</a></li>
@@ -128,7 +142,7 @@ a:hover {
     <li><a href="./Logan/index.html">Logan</a></li>
     <li><a href="./Miles/index.html">Miles</a></li>
     <li><a href="./Phillip/index.html">Phillip</a></li>
-    <li><a href="./Trevor/index.html">Trevor</a></li>
+    <li><a href="./Treasure/index.html">Treasure</a></li>
     <li><a href="./Wyatt/index.html">Wyatt</a></li>
     <li><a href="https://dafakebean.github.io/home/">Ben</a></li>
   </ul>

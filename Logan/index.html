@@ -1,0 +1,155 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html" charset="utf-8" />
+<title>3D Game Design</title>
+<script src="cannon.js"></script>
+<script src="babylon.js"></script>
+<script src="babylon.objFileLoader.min.js"></script>
+<script>
+function start() {
+var canvas = document.getElementById('renderCanvas');
+var engine = new BABYLON.Engine(canvas, true);
+
+var keys = {};
+window.addEventListener('keydown', function(e) {
+keys[e.key] = true;
+});   
+
+window.addEventListener('keyup', function(e) {
+keys[e.key] = false;
+});
+
+var scene = new BABYLON.Scene(engine);
+
+var gravityVector = new BABYLON.Vector3(0, -10, 0);
+scene.enablePhysics(gravityVector, new BABYLON.CannonJSPlugin());
+
+scene.clearColor = new BABYLON.Color3(0.8, 0.0, 0.0);
+var _xFn = function(t) {var fns = [function(t) {return (Math.pow((1-t),3)*0.025)+(3*t*Math.pow((1-t),2)*0.1)+(3*Math.pow(t,2)*(1-t)*0.1625)+(Math.pow(t,3)*0.2025)},function(t) {return (Math.pow((1-t),3)*0.2025)+(3*t*Math.pow((1-t),2)*0.2425)+(3*Math.pow(t,2)*(1-t)*0.3575)+(Math.pow(t,3)*0.2875)},function(t) {return (Math.pow((1-t),3)*0.2875)+(3*t*Math.pow((1-t),2)*0.2175)+(3*Math.pow(t,2)*(1-t)*0.5325)+(Math.pow(t,3)*0.5325)},function(t) {return (Math.pow((1-t),3)*0.5325)+(3*t*Math.pow((1-t),2)*0.5325)+(3*Math.pow(t,2)*(1-t)*0.63)+(Math.pow(t,3)*0.6275)},function(t) {return (Math.pow((1-t),3)*0.6275)+(3*t*Math.pow((1-t),2)*0.625)+(3*Math.pow(t,2)*(1-t)*0.47)+(Math.pow(t,3)*0.73)},function(t) {return (Math.pow((1-t),3)*0.73)+(3*t*Math.pow((1-t),2)*0.99)+(3*Math.pow(t,2)*(1-t)*0.23)+(Math.pow(t,3)*0.71)},function(t) {return (Math.pow((1-t),3)*0.71)+(3*t*Math.pow((1-t),2)*1.19)+(3*Math.pow(t,2)*(1-t)*0.9925)+(Math.pow(t,3)*0.865)},function(t) {return (Math.pow((1-t),3)*0.865)+(3*t*Math.pow((1-t),2)*0.7375)+(3*Math.pow(t,2)*(1-t)*0.9525)+(Math.pow(t,3)*0.0175)}];var i = Math.max(0,Math.min(7, Math.floor(t * 8)));return fns[i]((t - (i/8)) * 8);};
+var _yFn = function(t) {var fns = [function(t) {return (Math.pow((1-t),3)*0.2)+(3*t*Math.pow((1-t),2)*0.025)+(3*Math.pow(t,2)*(1-t)*0.025)+(Math.pow(t,3)*0.6303125)},function(t) {return (Math.pow((1-t),3)*0.6303125)+(3*t*Math.pow((1-t),2)*1.235625)+(3*Math.pow(t,2)*(1-t)*0.3778125)+(Math.pow(t,3)*0.0953125)},function(t) {return (Math.pow((1-t),3)*0.0953125)+(3*t*Math.pow((1-t),2)*-0.1871875)+(3*Math.pow(t,2)*(1-t)*0.1353125)+(Math.pow(t,3)*0.1353125)},function(t) {return (Math.pow((1-t),3)*0.1353125)+(3*t*Math.pow((1-t),2)*0.1353125)+(3*Math.pow(t,2)*(1-t)*0.2803125)+(Math.pow(t,3)*0.0178125)},function(t) {return (Math.pow((1-t),3)*0.0178125)+(3*t*Math.pow((1-t),2)*-0.2446875)+(3*Math.pow(t,2)*(1-t)*0.3653125)+(Math.pow(t,3)*0.8028125)},function(t) {return (Math.pow((1-t),3)*0.8028125)+(3*t*Math.pow((1-t),2)*1.2403125)+(3*Math.pow(t,2)*(1-t)*0.8453125)+(Math.pow(t,3)*0.2603125)},function(t) {return (Math.pow((1-t),3)*0.2603125)+(3*t*Math.pow((1-t),2)*-0.3246875)+(3*Math.pow(t,2)*(1-t)*0.8628125)+(Math.pow(t,3)*0.9353125)},function(t) {return (Math.pow((1-t),3)*0.9353125)+(3*t*Math.pow((1-t),2)*1.0078125)+(3*Math.pow(t,2)*(1-t)*0.2503125)+(Math.pow(t,3)*0.9978125)}];var i = Math.max(0,Math.min(7, Math.floor(t * 8)));return fns[i]((t - (i/8)) * 8);};
+
+var xFn = function(t) { return 650 * _xFn(t); }
+var zFn = function(t) { return 650 * _yFn(t); }
+
+var playerSphere = BABYLON.MeshBuilder.CreateSphere("playerSphere", {
+segments: 12,
+diameter: 4
+}, scene);
+playerSphere.material = new BABYLON.StandardMaterial("playerSphereMaterial", scene);
+playerSphere.material.diffuseTexture = new BABYLON.Texture('resources/tomura.avif', scene);
+playerSphere.position = new BABYLON.Vector3(xFn(0), 9, zFn(0));
+
+
+playerSphere.physicsImpostor = new BABYLON.PhysicsImpostor(playerSphere, BABYLON.PhysicsImpostor.SphereImpostor, {
+mass: 1,
+restitution: 0.1
+}, scene);
+var camera = new BABYLON.ArcRotateCamera("Camera", 0, (3 * Math.PI) / 8, 20, playerSphere, scene);
+camera.attachControl(canvas, true);
+
+var light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0, 1, 0), scene);
+
+scene.registerAfterRender(function() {
+var vel = playerSphere.physicsImpostor.getLinearVelocity();
+playerSphere.physicsImpostor.setLinearVelocity(vel.scale(.98));
+
+var forward = camera.getFrontPosition(1).subtract(camera.position);
+forward.y = 0;
+forward = forward.normalize().scale(1);
+
+var backward = BABYLON.Vector3.TransformCoordinates(forward, BABYLON.Matrix.RotationY(Math.PI));
+
+var left = BABYLON.Vector3.TransformCoordinates(forward, BABYLON.Matrix.RotationY((3 * Math.PI) / 2));
+
+var right = BABYLON.Vector3.TransformCoordinates(forward, BABYLON.Matrix.RotationY(Math.PI / 2));
+
+if (keys.w) {
+playerSphere.applyImpulse(forward, playerSphere.getAbsolutePosition());
+}
+if (keys.s) {
+playerSphere.applyImpulse(backward, playerSphere.getAbsolutePosition());
+}
+if (keys.a) {
+playerSphere.applyImpulse(left, playerSphere.getAbsolutePosition());
+}
+if (keys.d) {
+playerSphere.applyImpulse(right, playerSphere.getAbsolutePosition());
+
+}
+
+var currentT = tLookup(xFn, zFn, 500, playerSphere.position.x, playerSphere.position.z);
+if (currentT > 0.99) {
+win();
+}
+if (playerSphere.position.y < -10) {
+lost();
+}
+});
+
+function drawPoint(x, z, zrot, scene) {
+var point = BABYLON.MeshBuilder.CreateBox('point', {
+width: 10,
+height: 0.5,
+depth: 12
+}, scene);
+point.material = new BABYLON.StandardMaterial("pointMaterial", scene);
+point.material.diffuseColor = new BABYLON.Color3(1, 0, 1);
+point.position = new BABYLON.Vector3(x, 0.1, z);
+point.rotation.y = zrot;
+point.physicsImpostor = new BABYLON.PhysicsImpostor(point, BABYLON.PhysicsImpostor.BoxImpostor, {
+mass: 0,
+restitution: 1
+}, scene);
+}
+function drawParametric(xFn, zFn, start, end, res, scene) {
+for (var t = start; t <= end; t += ((end - start) / res)) {
+drawPoint(xFn(t), zFn(t), 0, scene);
+}
+}
+drawParametric(xFn, zFn, 0, 1, 350, scene);
+function tLookup(xFn, zFn, res, x, z) {
+var minT = 0;
+var minDist = Infinity;
+for (var t = 0; t <= 1; t += (1 / res)) {
+var dist = Math.pow(x - xFn(t), 2) + Math.pow(z - zFn(t), 2);
+if (dist < minDist) {
+minDist = dist;
+minT = t;
+}
+}
+return minT;
+}
+
+engine.runRenderLoop(scene.render.bind(scene));
+function win(){
+window.location.reload();
+alert("You WIN!");
+}
+function lost(){
+window.location.reload();
+alert("you lose!");
+}
+
+window.addEventListener('resize', engine.resize.bind(engine));
+}
+</script>
+<style>
+html, body {
+overflow: hidden;
+width: 100%;
+height: 100%;
+margin: 0;
+padding: 0;
+}
+#renderCanvas {
+width: 100%;
+height: 100%;
+touch-action: none;
+}
+
+</style>
+</head>
+<body onload="start()">
+<canvas id="renderCanvas"></cnvas>
+</body>
+</html>
