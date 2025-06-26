@@ -1,0 +1,275 @@
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+// World
+const worldWidth = 2000;
+const worldHeight = 1500;
+
+// Units
+const units = Array.from({ length: 10 }, (_, i) => ({
+  x: 300 + i * 40,
+  y: 300,
+  selected: false,
+  target: null,
+  attackCooldown: 0,
+  hp: 100,
+}));
+
+// Enemies
+const enemies = Array.from({ length: 5 }, (_, i) => ({
+  x: 1000 + i * 50,
+  y: 500 + Math.random() * 100,
+  hp: 100,
+  speed: 1,
+}));
+
+const buildings = [];
+const projectiles = [];
+
+// Selection
+let isSelecting = false;
+let selectStart = { x: 0, y: 0 };
+let selectEnd = { x: 0, y: 0 };
+
+// Camera and mouse
+let camX = 0, camY = 0;
+let mouseX = 0, mouseY = 0;
+
+function getMousePos(e) {
+  return {
+    x: e.clientX + camX,
+    y: e.clientY + camY,
+  };
+}
+
+function distance(a, b) {
+  return Math.hypot(a.x - b.x, a.y - b.y);
+}
+
+function shootProjectile(startX, startY, targetX, targetY) {
+  const angle = Math.atan2(targetY - startX, targetX - startX);
+  const speed = 6;
+  projectiles.push({
+    x: startX,
+    y: startY,
+    vx: Math.cos(angle) * speed,
+    vy: Math.sin(angle) * speed,
+    radius: 4
+  });
+}
+
+function placeBuilding(x, y) {
+  buildings.push({
+    x,
+    y,
+    width: 60,
+    height: 60,
+  });
+}
+
+// Input Events
+canvas.addEventListener("mousedown", (e) => {
+  if (e.button === 0) {
+    isSelecting = true;
+    selectStart = getMousePos(e);
+    selectEnd = selectStart;
+  }
+});
+
+canvas.addEventListener("mousemove", (e) => {
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+  if (isSelecting) {
+    selectEnd = getMousePos(e);
+  }
+});
+
+canvas.addEventListener("mouseup", (e) => {
+  if (e.button === 0 && isSelecting) {
+    isSelecting = false;
+    const minX = Math.min(selectStart.x, selectEnd.x);
+    const minY = Math.min(selectStart.y, selectEnd.y);
+    const maxX = Math.max(selectStart.x, selectEnd.x);
+    const maxY = Math.max(selectStart.y, selectEnd.y);
+    for (let unit of units) {
+      unit.selected = unit.x >= minX && unit.x <= maxX &&
+                      unit.y >= minY && unit.y <= maxY;
+    }
+  }
+});
+
+canvas.addEventListener("contextmenu", (e) => {
+  e.preventDefault();
+  const mouse = getMousePos(e);
+  const selectedUnits = units.filter(u => u.selected);
+
+  if (e.shiftKey) {
+    selectedUnits.forEach(unit => {
+      shootProjectile(unit.x, unit.y, mouse.x, mouse.y);
+    });
+  } else if (e.altKey) {
+    placeBuilding(mouse.x - 30, mouse.y - 30);
+  } else {
+    selectedUnits.forEach((unit, i) => {
+      const angle = (i / selectedUnits.length) * 2 * Math.PI;
+      unit.target = {
+        x: mouse.x + Math.cos(angle) * 20,
+        y: mouse.y + Math.sin(angle) * 20
+      };
+    });
+  }
+});
+
+function update() {
+  for (let unit of units) {
+    if (unit.hp <= 0) continue;
+    if (unit.target) {
+      const dx = unit.target.x - unit.x;
+      const dy = unit.target.y - unit.y;
+      const dist = Math.hypot(dx, dy);
+      if (dist > 1) {
+        unit.x += (dx / dist) * 2;
+        unit.y += (dy / dist) * 2;
+      } else {
+        unit.target = null;
+      }
+    }
+
+    let closest = null;
+    let closestDist = 150;
+    for (let enemy of enemies) {
+      const d = distance(unit, enemy);
+      if (d < closestDist) {
+        closest = enemy;
+        closestDist = d;
+      }
+    }
+
+    if (closest) {
+      unit.target = null;
+      if (unit.attackCooldown <= 0) {
+        closest.hp -= 10;
+        unit.attackCooldown = 30;
+      }
+    }
+
+    if (unit.attackCooldown > 0) unit.attackCooldown--;
+  }
+
+  for (let enemy of enemies) {
+    if (enemy.hp <= 0) continue;
+    let target = units.reduce((closest, unit) => {
+      if (unit.hp <= 0) return closest;
+      const d = distance(enemy, unit);
+      return !closest || d < distance(enemy, closest) ? unit : closest;
+    }, null);
+
+    if (target) {
+      const dx = target.x - enemy.x;
+      const dy = target.y - enemy.y;
+      const dist = Math.hypot(dx, dy);
+      if (dist > 5) {
+        enemy.x += (dx / dist) * enemy.speed;
+        enemy.y += (dy / dist) * enemy.speed;
+      } else {
+        target.hp -= 0.5;
+      }
+    }
+  }
+
+  // Projectiles
+  for (let i = projectiles.length - 1; i >= 0; i--) {
+    const p = projectiles[i];
+    p.x += p.vx;
+    p.y += p.vy;
+
+    for (let j = 0; j < enemies.length; j++) {
+      const e = enemies[j];
+      const dx = p.x - e.x;
+      const dy = p.y - e.y;
+      const dist = Math.hypot(dx, dy);
+      if (dist < 15) {
+        e.hp -= 20;
+        projectiles.splice(i, 1);
+        break;
+      }
+    }
+
+    if (p.x < 0 || p.y < 0 || p.x > worldWidth || p.y > worldHeight) {
+      projectiles.splice(i, 1);
+    }
+  }
+
+  for (let i = enemies.length - 1; i >= 0; i--) {
+    if (enemies[i].hp <= 0) enemies.splice(i, 1);
+  }
+}
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = "#222";
+  ctx.fillRect(-camX, -camY, worldWidth, worldHeight);
+
+  ctx.fillStyle = "gray";
+  for (const b of buildings) {
+    ctx.fillRect(b.x - camX, b.y - camY, b.width, b.height);
+    ctx.strokeStyle = "white";
+    ctx.strokeRect(b.x - camX, b.y - camY, b.width, b.height);
+  }
+
+  for (let enemy of enemies) {
+    ctx.fillStyle = "red";
+    ctx.beginPath();
+    ctx.arc(enemy.x - camX, enemy.y - camY, 15, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "white";
+    ctx.fillText(Math.floor(enemy.hp), enemy.x - camX - 10, enemy.y - camY - 20);
+  }
+
+  for (let unit of units) {
+    if (unit.hp <= 0) continue;
+    ctx.fillStyle = unit.selected ? "lime" : "white";
+    ctx.beginPath();
+    ctx.arc(unit.x - camX, unit.y - camY, 10, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "cyan";
+    ctx.fillText(Math.floor(unit.hp), unit.x - camX - 10, unit.y - camY - 20);
+  }
+
+  ctx.fillStyle = "yellow";
+  for (const p of projectiles) {
+    ctx.beginPath();
+    ctx.arc(p.x - camX, p.y - camY, p.radius, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  if (isSelecting) {
+    const x = Math.min(selectStart.x, selectEnd.x) - camX;
+    const y = Math.min(selectStart.y, selectEnd.y) - camY;
+    const w = Math.abs(selectEnd.x - selectStart.x);
+    const h = Math.abs(selectEnd.y - selectStart.y);
+    ctx.strokeStyle = "cyan";
+    ctx.strokeRect(x, y, w, h);
+  }
+}
+
+function gameLoop() {
+  update();
+  draw();
+
+  if (mouseX < 50) camX -= 5;
+  if (mouseY < 50) camY -= 5;
+  if (mouseX > canvas.width - 50) camX += 5;
+  if (mouseY > canvas.height - 50) camY += 5;
+
+  camX = Math.max(0, Math.min(worldWidth - canvas.width, camX));
+  camY = Math.max(0, Math.min(worldHeight - canvas.height, camY));
+
+  requestAnimationFrame(gameLoop);
+}
+
+gameLoop();

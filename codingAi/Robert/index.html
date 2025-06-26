@@ -21,7 +21,7 @@ background-color: slategrey;
             
         <h2>Epic the musical</h2>
     
-    <audio id="myMusic" src="./2.mp3" loop autoplay></audio>
+    <audio id="myMusic" src="./2.mp3"  autoplay loop></audio>
      <audio id="specialSound" src="./66.mp3"></audio>
     
     </body>
@@ -29,6 +29,8 @@ background-color: slategrey;
         let clicks = 0
         const counter = document.getElementById("counter")
         const specialSound = document.getElementById("specialSound");
+        const myMusic = document.getElementById("myMusic");
+        
 
 
         function picClicked() {
@@ -46,9 +48,14 @@ background-color: slategrey;
             // events past here
             
             if (clicks === 66) { 
-                specialSound.play(); 
-                
-}
+            
+              myMusic.pause(); // ⏸️ Pause background music
+            specialSound.volume = 1.0;  
+            specialSound.play(); 
+            
+            specialSound.onended = function () {
+                myMusic.play(); // 🔊 Resume background music
+            };}
             //events before here
         }
         

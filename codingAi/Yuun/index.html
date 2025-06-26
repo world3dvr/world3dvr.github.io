@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>CCOD</title>
+    </head>
+    <style>
+        body {background-color: rgba(255, 255, 255, 0.281); 
+            color: blue;
+            font-family: "Comic Sans MS";
+            text-shadow: 0cqmax;
+        }
+    </style>
+    <body>
+     
+        <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+     <p id="count">0</p>
+       <script>
+let clicks = 0;
+let canClick = true; // 🧊 Cooldown flag
+const counter = document.getElementById("count");
+
+function picClicked() {
+    if (!canClick) return; // 🚫 Ignore click if still in cooldown
+
+    canClick = false; // 🕒 Start cooldown
+    setTimeout(() => canClick = true, 500); // ✅ Allow click again after 300ms
+
+    console.log("hi");
+    let gamble = Math.random();
+
+    if (gamble < 0.05) {
+        clicks = clicks + 5;
+        triggerMultipleConfetti();
+    } else {
+        clicks = clicks - 1;
+    }
+
+    counter.textContent = clicks;
+}
+
+function triggerMultipleConfetti() {
+    let pops = 0;
+    const maxPops = 7;
+    const interval = setInterval(() => {
+        confetti({
+            particleCount: 250,
+            spread: 70,
+            origin: { y: 0.6 }
+        });
+        pops++;
+        if (pops >= maxPops) clearInterval(interval);
+    }, 5);
+}
+</script>
+    </script>
+     <h1>Sup. Welcome to the Creation Camp of Destruction</h1>
+     <h2>learn how to do warcrimes. (i am not responsible for ur actions)</h2>
+     <marquee>
+     <p>Don't blow up!
+     </p> 
+     </marquee>  
+<a href = "./starcraft.html">to starcraft</a>
+     <img src="download.jpg" id="BOMB" onclick="picClicked()"> lets go gambling!
+    </body>
+</html>
