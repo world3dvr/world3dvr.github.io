@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Simple Sprout Game</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #aaffee;
+    }
+    canvas {
+      display: block;
+    }
+    #hud {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: white;
+      padding: 8px;
+      font-family: sans-serif;
+      font-size: 16px;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<div id="hud">Health: <span id="health">100</span></div>
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let keys = {};
+document.addEventListener("keydown", e => keys[e.key] = true);
+document.addEventListener("keyup", e => keys[e.key] = false);
+
+let health = 100;
+const healthDisplay = document.getElementById("health");
+
+const player = {
+  x: 100,
+  y: 100,
+  size: 30,
+  color: "green",
+  update() {
+    if (keys['ArrowUp']) this.y -= 5;
+    if (keys['ArrowDown']) this.y += 5;
+    if (keys['ArrowLeft']) this.x -= 5;
+    if (keys['ArrowRight']) this.x += 5;
+  },
+  draw() {
+    ctx.fillStyle = this.color;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fill();
+  }
+};
+
+function drawMap() {
+  ctx.fillStyle = "#ccf7f1";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+
+function gameLoop() {
+  drawMap();
+  player.update();
+  player.draw();
+
+  healthDisplay.textContent = Math.floor(health);
+  requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
+</script>
+</body>
+</html>

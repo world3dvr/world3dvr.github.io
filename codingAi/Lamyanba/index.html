@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Utah</title>
+    </head>
+    <style>body {background-color: rgb(254, 172, 172);
+    color: rgb(255, 255, 255);
+    font-family: cursive;
+    }
+ img {
+            width: 200px;
+            transition: transform 0.3s ease;
+        }
+
+        /* Keyframes for pop effect */
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+           /* Class that triggers the animation */
+        .pop-effect {
+            animation: pop 0.3s ease;
+        }
+    </style>
+    
+    <body>
+        
+<script> </script>
+    <h1>Click the Utah Flag!</h1>
+    <img id="popImage" src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Flag_of_Utah.svg/330px-Flag_of_Utah.svg.png" alt="Utah Flag" onClick="picClicked ()">
+           
+    <div id="counter"></div>
+
+    <script>
+        const image = document.getElementById("popImage");
+
+        image.addEventListener("click", () => {
+            // Remove and re-add class to restart animation
+            image.classList.remove("pop-effect");
+            void image.offsetWidth; // force reflow (trick to restart animation)
+            image.classList.add("pop-effect");
+            
+            // Update click count
+            clickCount++;
+            counterDisplay.textContent = `Clicks: ${clickCount}`;
+        });
+    </script>
+        <p id="count" >0</p><script>
+    let clicks = 0;
+    const counter = document.getElementById("count")
+    function picClicked() {
+        console.log("hi")
+        let gamble = Math.random();
+        if (gamble < 0.05){
+            clicks = clicks + 100;
+            confetti();
+        } else {
+            clicks = clicks + 1;
+        }
+    counter.textContent = clicks;}
+    
+        </script>
+        <h1>Welcome to the Beehive State! (Virtually)</h1>
+        <h2>    Welcome to our server Utah! Where you can hang out with cool new people, play games, and learn!</h2>
+    <marquee>GUH GUH GUH GUH GUH GUH GUH GUH GUH GUAH GUH GUH GUH GUH GUH GUH GUH GUH GUH GUH GUH GUH GUH GUH GUH GUH GUH GUH GUH GUH</marquee>
+    <img 
+    src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Flag_of_Utah.svg/330px-Flag_of_Utah.svg.png"
+        onClick="picClicked()">
+        click me! I am less satasfying!
+    <h2>Classes we provide!
+        <ul>
+        <li>Global Affairs 1 & 2</li>
+        <li>Creation Camp of Destruction</li>
+       <li> Photography</li>
+       <li> Mathematics</li>
+       <li> Story Writing</li>
+       <li> Theatre/Stage Technology</li>
+       <li> History</li>
+ </h2>
+<h2> We also play games like
+    <li>Roblox (Dandy's world, GAG, TDS, Rivals, and more!)</li> 
+    <li>Minecraft</li> 
+    <li>Fortnite</li> 
+    <li>Cookie run Kingdom</li> 
+    <li>Marvel Rivals</li> 
+    <li>Chess</li> 
+    <li>Genshin Impact</li> 
+    <li>Honkai Star Rail</li> </h2> 
+<h2> Server Information
+    <li>Owners: TheOgCountry & Ksnickle</li>
+    <li>Supreme Moderators: Ash & Noy</li>
+    <li>Regular Moderators: Sans & AK</li>
+
+        <h6>celisha</h6>
+<!-- Dandy Spin + Confetti Game -->
+<style>
+    #dandy-section {
+        margin-top: 50px;
+        text-align: center;
+        background-color: #ffe6f0;
+        padding: 20px;
+        border-top: 4px dashed #ff99c8;
+    }
+
+    #dandy-img {
+        width: 120px;
+        cursor: pointer;
+        transition: transform 0.4s ease;
+    }
+
+    .spin {
+        animation: spin 0.6s ease;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    #dandy-points {
+        font-size: 20px;
+        font-weight: bold;
+        color: #d1007f;
+        margin-top: 10px;
+    }
+</style>
+
+<div id="dandy-section">
+    <h2>✨ Click Yatta! ✨</h2>
+    <img id="dandy-img" src="https://i.namu.wiki/i/HteozK6dfynfCRkJEKUUr_ieyX_ddV8QZqKS8-syntAzzM5rSvUblckuwa85wHmwFy3Mfufyl-hTmWHG9MQvAw.webp" alt="Dandy">
+    <div id="dandy-points">Points: 0</div>
+</div>
+
+<!-- Confetti Library -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<script>
+    const dandy = document.getElementById("dandy-img");
+    const scoreDisplay = document.getElementById("dandy-points");
+    let score = 0;
+
+    dandy.addEventListener("click", () => {
+        // Add spinning animation
+        dandy.classList.remove("spin");
+        void dandy.offsetWidth; // force reflow to restart
+        dandy.classList.add("spin");
+
+        // Increase points
+        score++;
+        scoreDisplay.textContent = `Points: ${score}`;
+
+        // Confetti (pink and blue only)
+        confetti({
+            particleCount: 100,
+            spread: 60,
+            origin: { y: 0.6 },
+            colors: ['#ff99c8', '#99ccff'], // pink and blue
+        });
+    });
+</script>
+    
+</script>
+</h2>
+</ul
+</body>
+<!-- Dandy's Drawing Pad with Utah Flag Background -->
+<style>
+    #draw-section {
+        margin-top: 50px;
+        text-align: center;
+        padding: 20px;
+        border-top: 4px solid #ffb347;
+
+        /* Utah flag background behind canvas */
+        background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Flag_of_Utah.svg/800px-Flag_of_Utah.svg.png');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+
+    #drawCanvas {
+        border: 3px solid #000;
+        background-color: #ffffff; /* White drawing surface */
+        cursor: crosshair;
+        touch-action: none;
+    }
+
+    .draw-controls {
+        margin-top: 10px;
+    }
+
+    .draw-controls > * {
+        margin: 0 5px;
+        padding: 5px 10px;
+        font-weight: bold;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    input[type=range] {
+        vertical-align: middle;
+    }
+</style>
+
+<div id="draw-section">
+    <h2>🎨 Utah Drawing Pad</h2>
+    <canvas id="drawCanvas" width="500" height="350"></canvas>
+
+    <div class="draw-controls">
+        <label>Brush Size:
+            <input type="range" id="brushSize" min="1" max="20" value="3">
+        </label>
+
+        <label>Color:
+            <input type="color" id="colorPicker" value="#000000">
+        </label>
+
+        <button onclick="undo()">Undo</button>
+        <button onclick="clearCanvas()">Clear</button>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById("drawCanvas");
+    const ctx = canvas.getContext("2d");
+    const colorPicker = document.getElementById("colorPicker");
+    const brushSlider = document.getElementById("brushSize");
+
+    let drawing = false;
+    let brushSize = brushSlider.value;
+    let color = colorPicker.value;
+    let history = [];
+
+    function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        return {
+            x: (e.clientX || e.touches[0].clientX) - rect.left,
+            y: (e.clientY || e.touches[0].clientY) - rect.top
+        };
+    }
+
+    function startDrawing(e) {
+        drawing = true;
+        ctx.beginPath();
+        const pos = getPos(e);
+        ctx.moveTo(pos.x, pos.y);
+
+        // Save current state for undo
+        history.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+    }
+
+    function draw(e) {
+        if (!drawing) return;
+        const pos = getPos(e);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = brushSize;
+        ctx.lineCap = "round";
+        ctx.stroke();
+    }
+
+    function stopDrawing() {
+        drawing = false;
+    }
+
+    function clearCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        history = [];
+    }
+
+    function undo() {
+        if (history.length > 0) {
+            ctx.putImageData(history.pop(), 0, 0);
+        }
+    }
+
+    // Event listeners
+    canvas.addEventListener("mousedown", startDrawing);
+    canvas.addEventListener("mousemove", draw);
+    canvas.addEventListener("mouseup", stopDrawing);
+    canvas.addEventListener("mouseleave", stopDrawing);
+
+    canvas.addEventListener("touchstart", (e) => { e.preventDefault(); startDrawing(e); });
+    canvas.addEventListener("touchmove", (e) => { e.preventDefault(); draw(e); });
+    canvas.addEventListener("touchend", stopDrawing);
+
+    brushSlider.addEventListener("input", () => {
+        brushSize = brushSlider.value;
+    });
+
+    colorPicker.addEventListener("input", () => {
+        color = colorPicker.value;
+    });
+</script>
+</script>
+</script>
+</script>
+
+</script>
+</html>

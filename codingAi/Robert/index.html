@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Gods of Olympus</title>
+    </head>
+    <style>
+        body { 
+background-color: slategrey;
+ font-size: large
+         }
+    
+
+    </style>
+
+    <body>
+       <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+ <p id = "counter">0</p>
+        <h1>my website (gods)</h1>
+        <marquee><p>god games</p>
+        <img onClick="picClicked()" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS_IZ3_PUkldoBGCtJcbp_VnYPB9Qjh0X4cnQ&s"/></marquee>
+            
+        <h2>Epic the musical</h2>
+    
+    <audio id="myMusic" src="./2.mp3" loop autoplay></audio>
+     <audio id="specialSound" src="./66.mp3"></audio>
+    
+    </body>
+    <script>
+        let clicks = 0
+        const counter = document.getElementById("counter")
+        const specialSound = document.getElementById("specialSound");
+
+
+        function picClicked() {
+            console.log("hi");
+            let gamble = Math.random() 
+            if (gamble < 0.001)
+            {
+                clicks = clicks + 100;
+                confetti();
+            } else{
+                clicks = clicks + 1;
+            }
+            counter.textContent = clicks;
+
+            // events past here
+            
+            if (clicks === 66) { 
+                specialSound.play(); 
+                
+}
+            //events before here
+        }
+        
+
+    </script>
+<p>1. Modern Twist on Classic Mythology
+Retells The Odyssey in a fresh, emotional, and epic way.
+
+Features characters like Odysseus, Poseidon, and Circe in a relatable, dramatic light.</p>
+
+<p>2. Powerful Music & Lyrics
+Songs like “Hero Too,” “You,re Mine,” and “Full Sails” are deeply emotional and cinematic.
+
+Combines orchestral grandeur with modern storytelling and lyrics.
+
+Jorge Rivera-Herrans (creator/composer) is compared to Lin-Manuel Miranda for his writing talent.</p>
+
+<p>3. Relatable Themes
+Deals with identity, family, war trauma, loss, and perseverance.
+
+Odysseus is portrayed as a flawed, complex hero struggling to find home — emotionally and literally</p>
+
+<p>4. Amazing Vocal Performances
+Broadway-level singing from artists like:
+
+Corey Cott (Bandstand, Newsies)
+
+Teal Wicks (Wicked, The Cher Show)
+
+James D. Gish, Ethan Carlson, and more.</p>
+
+<p>5. Visually Rich Storytelling (Coming Soon)
+Currently audio-only (like a musical podcast), but there's talk of a full-stage production or animated adaptation in the future.
+
+The concept art and fan animations are already varry common</p>
+
+<p>6. Growing Fandom
+There's a massive community making animations, covers, and fan art.
+
+The community is supportive and creative — great to be a part of.</p>
+
+<p>7. It's Still Unfolding
+Only a few arcs (episodes) are out, so you can catch up easily.
+
+New content is in progress, and the creator actively involves fans in the journey.</p>
+
+
+
+
+
+
+
+
+
+
+</html>

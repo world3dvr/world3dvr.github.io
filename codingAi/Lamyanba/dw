@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dandy's World: Survival Sprout</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: 'Comic Sans MS', cursive;
+      background: linear-gradient(to bottom right, #f5f7fa, #c3cfe2);
+    }
+    canvas {
+      display: block;
+    }
+    #hud {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      color: #222;
+      font-size: 18px;
+      background: rgba(255,255,255,0.7);
+      padding: 10px;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+<canvas id="gameCanvas"></canvas>
+<div id="hud">Health: <span id="health">100</span></div>
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let keys = {};
+document.addEventListener("keydown", (e) => keys[e.key] = true);
+document.addEventListener("keyup", (e) => keys[e.key] = false);
+
+const sprout = {
+  x: 100,
+  y: 100,
+  size: 40,
+  color: "#6ac36a",
+  draw() {
+    ctx.fillStyle = this.color;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fill();
+  },
+  update() {
+    if (keys["ArrowUp"]) this.y -= 5;
+    if (keys["ArrowDown"]) this.y += 5;
+    if (keys["ArrowLeft"]) this.x -= 5;
+    if (keys["ArrowRight"]) this.x += 5;
+  }
+};
+
+class Machine {
+  constructor(x, y, color, effect) {
+    this.x = x;
+    this.y = y;
+    this.color = color;
+    this.size = 30;
+    this.effect = effect;
+  }
+  draw() {
+    ctx.fillStyle = this.color;
+    ctx.fillRect(this.x - this.size / 2, this.y - this.size / 2, this.size, this.size);
+  }
+  checkCollision(player) {
+    const dx = this.x - player.x;
+    const dy = this.y - player.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist < this.size + player.size / 2) {
+      this.effect();
+    }
+  }
+}
+
+let health = 100;
+const healthDisplay = document.getElementById("health");
+
+const machines = [
+  new Machine(400, 300, "#ff9999", () => { health -= 1; }),
+  new Machine(700, 200, "#99ccff", () => { health += 0.5; }),
+  new Machine(600, 500, "#ffff99", () => { health += 1; }),
+  new Machine(900, 400, "#cc99ff", () => { health -= 0.5; })
+];
+
+class Enemy {
+  constructor(name, x, y, color, speed) {
+    this.name = name;
+    this.x = x;
+    this.y = y;
+    this.color = color;
+    this.size = 35;
+    this.speed = speed;
+  }
+  draw() {
+    ctx.fillStyle = this.color;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  update(player) {
+    const dx = player.x - this.x;
+    const dy = player.y - this.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist > 1) {
+      this.x += (dx / dist) * this.speed;
+      this.y += (dy / dist) * this.speed;
+    }
+    if (dist < this.size + player.size) {
+      health -= 0.2;
+    }
+  }
+}
+
+const enemies = [
+  new Enemy("Twisted Sprout", 300, 300, "#993333", 1.5),
+  new Enemy("Evil Shellyt", 800, 600, "#663366", 1.2)
+];
+
+function drawBackground() {
+  ctx.fillStyle = "#aaffee;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  // Add colorful map blobs
+  for (let i = 0; i < 50; i++) {
+    ctx.fillStyle = `hsl(${Math.random()*360}, 70%, 80%)`;
+    ctx.beginPath();
+    ctx.arc(Math.random()*canvas.width, Math.random()*canvas.height, Math.random()*30 + 10, 0, Math.PI*2);
+    ctx.fill();
+  }
+}
+
+function gameLoop() {
+  drawBackground();
+  sprout.update();
+  sprout.draw();
+
+  machines.forEach(m => {
+    m.draw();
+    m.checkCollision(sprout);
+  });
+
+  enemies.forEach(e => {
+    e.update(sprout);
+    e.draw();
+  });
+
+  healthDisplay.textContent = Math.max(0, Math.floor(health));
+  if (health <= 0) {
+    alert("Game Over! Sprout couldn't survive...");
+    window.location.reload();
+  }
+  requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
+</script>
+</body>
+</html>

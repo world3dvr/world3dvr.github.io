@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Game Collection</title>
+<style>
+  body {
+    margin: 0; 
+    font-family: Arial, sans-serif;
+    background: #222;
+    color: #eee;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+  header {
+    background: #111;
+    padding: 12px 20px;
+    font-size: 1.5em;
+    font-weight: bold;
+    text-align: center;
+  }
+  nav {
+    background: #333;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding: 10px 0;
+  }
+  nav button {
+    background: #555;
+    border: none;
+    padding: 10px 16px;
+    font-size: 1em;
+    color: #eee;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background 0.3s;
+  }
+  nav button:hover, nav button.active {
+    background: #09f;
+    color: #fff;
+  }
+  #gameArea {
+    flex-grow: 1;
+    background: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+  }
+  canvas {
+    background: #444;
+    border: 3px solid #09f;
+    border-radius: 8px;
+  }
+  #info {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.7);
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-weight: bold;
+    pointer-events: none;
+    min-width: 300px;
+    text-align: center;
+  }
+  /* Tic Tac Toe grid styles */
+  #ticTacToeBoard {
+    display: grid;
+    grid-template-columns: repeat(3, 100px);
+    grid-template-rows: repeat(3, 100px);
+    gap: 5px;
+  }
+  .ttt-cell {
+    background: #222;
+    border: 2px solid #09f;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 4em;
+    cursor: pointer;
+    user-select: none;
+  }
+  .ttt-cell:hover {
+    background: #333;
+  }
+  #tttStatus {
+    margin-top: 12px;
+    font-size: 1.2em;
+  }
+</style>
+</head>
+<body>
+
+<header>My Game Collection</header>
+<nav>
+  <button id="btnTicTacToe">Tic-Tac-Toe</button>
+  <button id="btnSnake">Snake</button>
+  <button id="btnPlatformer" class="active">Platformer</button>
+</nav>
+
+<div id="gameArea">
+    <div id="levelEditor" style="margin-top: 20px;">
+        <h3>Level Editor</h3>
+        <button onclick="toggleDrawMode()">Toggle Draw Mode</button>
+        <button onclick="saveLevel()">💾 Save</button>
+        <button onclick="loadLevel()">📂 Load</button>
+        <button onclick="exportLevel()">📋 Export JSON</button>
+        <button onclick="importLevel()">📥 Import JSON</button>
+        <textarea id="levelData" rows="5" cols="80" placeholder="Paste level JSON here..."></textarea>
+      </div>
+  <div id="info">Use ← → to move, ↑ or Space to jump. Reach the flag and avoid enemies!</div>
+  <canvas id="gameCanvas" width="800" height="400"></canvas>
+</div>
+
+<script>
+// --- Game Switching ---
+
+const btnTicTacToe = document.getElementById('btnTicTacToe');
+const btnSnake = document.getElementById('btnSnake');
+const btnPlatformer = document.getElementById('btnPlatformer');
+const info = document.getElementById('info');
+const gameArea = document.getElementById('gameArea');
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+btnTicTacToe.addEventListener('click', () => loadGame('ticTacToe'));
+btnSnake.addEventListener('click', () => loadGame('snake'));
+let drawMode = false;
+
+function toggleDrawMode() {
+  drawMode = !drawMode;
+  if (drawMode) {
+    info.textContent = 'Draw Mode ON: Click on canvas to place platforms.';
+    cancelAnimationFrame(platformerId);
+  } else {
+    info.textContent = `Platformer - Level ${currentLevel + 1}`;
+    platformer();
+  }
+}
+
+canvas.addEventListener('click', e => {
+  if (!drawMode) return;
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  const width = 100;
+  const height = 15;
+
+  levels[currentLevel].platforms.push({ x, y, width, height });
+  drawLevel(levels[currentLevel]);
+});
+
+function saveLevel() {
+  localStorage.setItem('platformerLevel', JSON.stringify(levels[currentLevel].platforms));
+  alert('Level saved to browser!');
+}
+
+function loadLevel() {
+  const saved = localStorage.getItem('platformerLevel');
+  if (saved) {
+    levels[currentLevel].platforms = JSON.parse(saved);
+    drawLevel(levels[currentLevel]);
+    alert('Level loaded from browser.');
+  } else {
+    alert('No saved level found.');
+  }
+}
+
+function exportLevel() {
+  const json = JSON.stringify(levels[currentLevel].platforms, null, 2);
+  document.getElementById('levelData').value = json;
+  navigator.clipboard.writeText(json);
+  alert('Level JSON copied to clipboard!');
+}
+
+function importLevel() {
+  try {
+    const input = document.getElementById('levelData').value;
+    const parsed = JSON.parse(input);
+    levels[currentLevel].platforms = parsed;
+    drawLevel(levels[currentLevel]);
+    alert('Imported level!');
+  } catch (e) {
+    alert('Invalid JSON format.');
+  }
+}
+btnPlatformer.addEventListener('click', () => loadGame('platformer'));
+
+function setActiveButton(activeBtn) {
+  [btnTicTacToe, btnSnake, btnPlatformer].forEach(btn => btn.classList.remove('active'));
+  activeBtn.classList.add('active');
+}
+
+// --- TIC-TAC-TOE ---
+
+let tttBoard, tttTurn, tttOver, tttWinner, tttBoardElem, tttStatus;
+
+function createTTTBoard() {
+  tttBoardElem = document.createElement('div');
+  tttBoardElem.id = 'ticTacToeBoard';
+  tttBoard = Array(9).fill(null);
+  tttTurn = 'X';
+  tttOver = false;
+  tttWinner = null;
+
+  // Create cells
+  for(let i = 0; i < 9; i++) {
+    const cell = document.createElement('div');
+    cell.classList.add('ttt-cell');
+    cell.dataset.index = i;
+    cell.addEventListener('click', () => tttCellClick(i));
+    tttBoardElem.appendChild(cell);
+  }
+
+  // Status text
+  tttStatus = document.createElement('div');
+  tttStatus.id = 'tttStatus';
+  tttStatus.textContent = "Turn: X";
+
+  // Clear gameArea and add board + status
+  gameArea.innerHTML = '';
+  gameArea.appendChild(tttBoardElem);
+  gameArea.appendChild(tttStatus);
+}
+
+function tttCellClick(i) {
+  if(tttOver || tttBoard[i]) return;
+  tttBoard[i] = tttTurn;
+  updateTTTBoard();
+  checkTTTWin();
+  if(!tttOver) {
+    tttTurn = tttTurn === 'X' ? 'O' : 'X';
+    tttStatus.textContent = `Turn: ${tttTurn}`;
+  }
+}
+
+function updateTTTBoard() {
+  const cells = tttBoardElem.children;
+  for(let i = 0; i < 9; i++) {
+    cells[i].textContent = tttBoard[i] || '';
+  }
+}
+
+function checkTTTWin() {
+  const wins = [
+    [0,1,2],[3,4,5],[6,7,8], // rows
+    [0,3,6],[1,4,7],[2,5,8], // cols
+    [0,4,8],[2,4,6]          // diagonals
+  ];
+  for(const line of wins) {
+    const [a,b,c] = line;
+    if(tttBoard[a] && tttBoard[a] === tttBoard[b] && tttBoard[a] === tttBoard[c]) {
+      tttWinner = tttBoard[a];
+      tttOver = true;
+      tttStatus.textContent = `Player ${tttWinner} Wins! Click any cell to restart.`;
+      return;
+    }
+  }
+  if(!tttBoard.includes(null)) {
+    tttOver = true;
+    tttStatus.textContent = "It's a Draw! Click any cell to restart.";
+  }
+}
+
+function resetTTT() {
+  createTTTBoard();
+}
+
+// Restart on click if game over
+function tttBoardClick(e) {
+  if(tttOver) resetTTT();
+}
+
+// --- SNAKE ---
+
+let snakeInterval;
+let snakeDir;
+let snakeSpeed;
+let snakeBody;
+let food;
+let snakeGameOver;
+
+function initSnake() {
+  snakeDir = 'right';
+  snakeSpeed = 100; // ms
+  snakeBody = [{x:10,y:10}];
+  placeFood();
+  snakeGameOver = false;
+  info.textContent = 'Snake - Use Arrow Keys to move. Eat the red food!';
+  canvas.width = 400;
+  canvas.height = 400;
+  ctx.imageSmoothingEnabled = false;
+  clearInterval(snakeInterval);
+  snakeInterval = setInterval(gameLoopSnake, snakeSpeed);
+}
+
+function placeFood() {
+  food = {
+    x: Math.floor(Math.random()*20),
+    y: Math.floor(Math.random()*20)
+  };
+  // Avoid food on snake
+  if(snakeBody.some(s => s.x === food.x && s.y === food.y)) {
+    placeFood();
+  }
+}
+
+function gameLoopSnake() {
+  if(snakeGameOver) {
+    clearInterval(snakeInterval);
+    info.textContent = "Game Over! Press Space to restart.";
+    return;
+  }
+  
+  // Move snake
+  let head = {...snakeBody[0]};
+  if(snakeDir === 'right') head.x++;
+  else if(snakeDir === 'left') head.x--;
+  else if(snakeDir === 'up') head.y--;
+  else if(snakeDir === 'down') head.y++;
+  
+  // Check collisions with walls
+  if(head.x < 0 || head.x >= 20 || head.y < 0 || head.y >= 20) {
+    snakeGameOver = true;
+  }
+  // Check collisions with self
+  if(snakeBody.some(s => s.x === head.x && s.y === head.y)) {
+    snakeGameOver = true;
+  }
+  
+  if(snakeGameOver) {
+    drawSnake();
+    return;
+  }
+  
+  snakeBody.unshift(head);
+
+  // Check if ate food
+  if(head.x === food.x && head.y === food.y) {
+    placeFood();
+  } else {
+    snakeBody.pop();
+  }
+  
+  drawSnake();
+}
+
+function drawSnake() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  // Background grid
+  ctx.fillStyle = '#222';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  // Draw food
+  ctx.fillStyle = '#ff0000';
+  ctx.fillRect(food.x*20, food.y*20, 20, 20);
+
+  // Draw snake
+  ctx.fillStyle = '#00ff00';
+  snakeBody.forEach((segment, i) => {
+    ctx.fillRect(segment.x*20, segment.y*20, 20, 20);
+    // draw eyes on head
+    if(i === 0) {
+      ctx.fillStyle = '#000';
+      ctx.fillRect(segment.x*20 + 5, segment.y*20 + 5, 5, 5);
+      ctx.fillRect(segment.x*20 + 10, segment.y*20 + 5, 5, 5);
+      ctx.fillStyle = '#00ff00';
+    }
+  });
+}
+
+// Handle arrow keys for snake
+function handleSnakeKey(e) {
+  if(snakeGameOver && e.code === 'Space') {
+    initSnake();
+    return;
+  }
+  if(e.code === 'ArrowUp' && snakeDir !== 'down') snakeDir = 'up';
+  else if(e.code === 'ArrowDown' && snakeDir !== 'up') snakeDir = 'down';
+  else if(e.code === 'ArrowLeft' && snakeDir !== 'right') snakeDir = 'left';
+  else if(e.code === 'ArrowRight' && snakeDir !== 'left') snakeDir = 'right';
+}
+
+// --- PLATFORMER with enemies & 4 levels ---
+
+const gravity = 0.6;
+const friction = 0.8;
+
+const player = {
+  x: 50,
+  y: 0,
+  width: 30,
+  height: 50,
+  color: '#ff5733',
+  velX: 0,
+  velY: 0,
+  speed: 5,
+  jumping: false
+};
+
+let currentLevel = 0;
+
+const levels = [
+  {
+    platforms: [
+      {x: 0, y: 380, width: 800, height: 20},
+      {x: 120, y: 320, width: 100, height: 15},
+      {x: 260, y: 260, width: 100, height: 15},
+      {x: 420, y: 210, width: 120, height: 15},
+      {x: 600, y: 160, width: 100, height: 15},
+      {x: 740, y: 100, width: 50, height: 15}
+    ],
+    enemies: [
+      {x: 150, y: 290, width: 30, height: 30, speed: 2, range: [120, 220], direction: 1, color: '#0000ff'},
+      {x: 430, y: 180, width: 30, height: 30, speed: 1.5, range: [420, 540], direction: 1, color: '#0000ff'}
+    ],
+    flag: {x: 770, y: 50, width: 30, height: 50, color: '#006400'}
+  },
+  {
+    platforms: [
+      {x: 0, y: 380, width: 800, height: 20},
+      {x: 100, y: 320, width: 150, height: 15},
+      {x: 300, y: 270, width: 80, height: 15},
+      {x: 420, y: 210, width: 100, height: 15},
+      {x: 550, y: 150, width: 120, height: 15},
+      {x: 700, y: 120, width: 60, height: 15}
+    ],
+    enemies: [
+      {x: 120, y: 290, width: 30, height: 30, speed: 2.5, range: [100, 250], direction: 1, color: '#00008b'},
+      {x: 430, y: 180, width: 30, height: 30, speed: 2, range: [420, 520], direction: 1, color: '#00008b'},
+      {x: 580, y: 120, width: 30, height: 30, speed: 3, range: [550, 670], direction: 1, color: '#00008b'}
+    ],
+    flag: {x: 750, y: 70, width: 30, height: 50, color: '#004d00'}
+  },
+  {
+    platforms: [
+      {x: 0, y: 380, width: 800, height: 20},
+      {x: 130, y: 330, width: 120, height: 15},
+      {x: 300, y: 280, width: 90, height: 15},
+      {x: 450, y: 230, width: 110, height: 15},
+      {x: 620, y: 180, width: 90, height: 15},
+      {x: 740, y: 140, width: 40, height: 15}
+    ],
+    enemies: [
+      {x: 140, y: 300, width: 30, height: 30, speed: 1.7, range: [130, 250], direction: 1, color: '#8b0000'},
+      {x: 460, y: 200, width: 30, height: 30, speed: 2.2, range: [450, 560], direction: 1, color: '#8b0000'},
+      {x: 630, y: 150, width: 30, height: 30, speed: 2.5, range: [620, 700], direction: 1, color: '#8b0000'}
+    ],
+    flag: {x: 770, y: 80, width: 30, height: 50, color: '#330066'}
+  },
+  {
+    platforms: [
+      {x: 0, y: 380, width: 800, height: 20},
+      {x: 100, y: 320, width: 180, height: 15},
+      {x: 320, y: 270, width: 100, height: 15},
+      {x: 460, y: 220, width: 120, height: 15},
+      {x: 630, y: 170, width: 120, height: 15},
+      {x: 770, y: 130, width: 30, height: 15}
+    ],
+    enemies: [
+      {x: 120, y: 290, width: 30, height: 30, speed: 2, range: [100, 280], direction: 1, color: '#006666'},
+      {x: 470, y: 190, width: 30, height: 30, speed: 2.5, range: [460, 580], direction: 1, color: '#006666'},
+      {x: 640, y: 140, width: 30, height: 30, speed: 3, range: [630, 750], direction: 1, color: '#006666'},
+      {x: 780, y: 100, width: 20, height: 20, speed: 3.5, range: [770, 800], direction: 1, color: '#006666'}
+    ],
+    flag: {x: 790, y: 90, width: 30, height: 50, color: '#660033'}
+  }
+];
+
+const keys = {
+  left: false,
+  right: false,
+  up: false
+};
+
+window.addEventListener('keydown', e => {
+  if(gameMode === 'platformer') {
+    if(e.code === 'ArrowLeft') keys.left = true;
+    if(e.code === 'ArrowRight') keys.right = true;
+    if(e.code === 'ArrowUp' || e.code === 'Space') keys.up = true;
+  }
+  if(gameMode === 'snake') {
+    handleSnakeKey(e);
+  }
+});
+
+window.addEventListener('keyup', e => {
+  if(gameMode === 'platformer') {
+    if(e.code === 'ArrowLeft') keys.left = false;
+    if(e.code === 'ArrowRight') keys.right = false;
+    if(e.code === 'ArrowUp' || e.code === 'Space') keys.up = false;
+  }
+});
+
+function rectsCollide(a,b) {
+  return !(a.x + a.width < b.x || a.x > b.x + b.width ||
+           a.y + a.height < b.y || a.y > b.y + b.height);
+}
+
+function updateEnemies(enemies) {
+  enemies.forEach(enemy => {
+    enemy.x += enemy.speed * enemy.direction;
+    if(enemy.x < enemy.range[0]) {
+      enemy.x = enemy.range[0];
+      enemy.direction *= -1;
+    } else if(enemy.x + enemy.width > enemy.range[1]) {
+      enemy.x = enemy.range[1] - enemy.width;
+      enemy.direction *= -1;
+    }
+  });
+}
+
+function drawLevel(level) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+  // platforms
+  ctx.fillStyle = '#999';
+  level.platforms.forEach(p => {
+    ctx.fillRect(p.x, p.y, p.width, p.height);
+  });
+  
+  // flag
+  const f = level.flag;
+  ctx.fillStyle = f.color;
+  ctx.fillRect(f.x, f.y, f.width, f.height);
+  
+  // enemies
+  level.enemies.forEach(e => {
+    ctx.fillStyle = e.color;
+    ctx.fillRect(e.x, e.y, e.width, e.height);
+  });
+  
+  // player
+  ctx.fillStyle = player.color;
+  ctx.fillRect(player.x, player.y, player.width, player.height);
+}
+
+function resetPlayer() {
+  player.x = 50;
+  player.y = 330;
+  player.velX = 0;
+  player.velY = 0;
+  player.jumping = false;
+}
+
+function platformer() {
+  info.textContent = `Platformer - Level ${currentLevel + 1} / ${levels.length}`;
+  
+  const level = levels[currentLevel];
+  
+  // Controls
+  if(keys.left) {
+    if(player.velX > -player.speed) {
+      player.velX--;
+    }
+  }
+  if(keys.right) {
+    if(player.velX < player.speed) {
+      player.velX++;
+    }
+  }
+  
+  // Jumping
+  if(keys.up && !player.jumping) {
+    player.velY = -13;
+    player.jumping = true;
+  }
+  
+  // Apply physics
+  player.velX *= friction;
+  player.velY += gravity;
+  
+  player.x += player.velX;
+  player.y += player.velY;
+  
+  // Boundaries
+  if(player.x < 0) player.x = 0;
+  if(player.x + player.width > canvas.width) player.x = canvas.width - player.width;
+  if(player.y + player.height > canvas.height) {
+    player.y = canvas.height - player.height;
+    player.jumping = false;
+    player.velY = 0;
+  }
+  
+  // Platform collision
+  level.platforms.forEach(p => {
+    if(player.x < p.x + p.width &&
+       player.x + player.width > p.x &&
+       player.y < p.y + p.height &&
+       player.y + player.height > p.y) {
+      
+      // Collision from above
+      if(player.velY > 0 && (player.y + player.height - player.velY) <= p.y) {
+        player.y = p.y - player.height;
+        player.jumping = false;
+        player.velY = 0;
+      }
+      // Collision from below
+      else if(player.velY < 0 && (player.y - player.velY) >= p.y + p.height) {
+        player.y = p.y + p.height;
+        player.velY = 0;
+      }
+      // Side collisions
+      else {
+        if(player.x < p.x) player.x = p.x - player.width;
+        else player.x = p.x + p.width;
+        player.velX = 0;
+      }
+    }
+  });
+  
+  // Update enemies
+  updateEnemies(level.enemies);
+  
+  // Check collision with enemies
+  for(let e of level.enemies) {
+    if(rectsCollide(player, e)) {
+      info.textContent = "You hit an enemy! Restarting level...";
+      resetPlayer();
+      break;
+    }
+  }
+  
+  // Check if reached flag
+  if(rectsCollide(player, level.flag)) {
+    currentLevel++;
+    if(currentLevel >= levels.length) {
+      info.textContent = "You completed all levels! Congrats!";
+      currentLevel = 0;
+    } else {
+      info.textContent = `Level ${currentLevel + 1} - Good luck!`;
+    }
+    resetPlayer();
+  }
+  
+  // Draw everything
+  drawLevel(level);
+  
+  if(gameMode === 'platformer') requestAnimationFrame(platformer);
+}
+let  = false;
+let drawingPlatform = null; // temp platform being drawn
+
+// Create a button to toggle draw mode
+const drawBtn = document.createElement('button');
+drawBtn.textContent = 'Toggle Draw Platforms';
+drawBtn.style.marginLeft = '10px';
+info.parentNode.insertBefore(drawBtn, info.nextSibling);
+
+drawBtn.addEventListener('click', () => {
+  drawMode = !drawMode;
+  if(drawMode) {
+    info.textContent = 'Draw Mode ON: Click and drag to create platforms.';
+    // Stop game loop so player/enemies don't move while drawing
+    cancelAnimationFrame(platformerId);
+  } else {
+    info.textContent = `Draw Mode OFF: Playing level ${currentLevel + 1}`;
+    // Start game loop again
+    platformer();
+  }
+});
+
+// Mouse events for drawing platforms
+canvas.addEventListener('mousedown', e => {
+  if(!drawMode) return;
+  const rect = canvas.getBoundingClientRect();
+  const startX = e.clientX - rect.left;
+  const startY = e.clientY - rect.top;
+  drawingPlatform = {x: startX, y: startY, width: 0, height: 0};
+});
+
+canvas.addEventListener('mousemove', e => {
+  if(!drawMode || !drawingPlatform) return;
+  const rect = canvas.getBoundingClientRect();
+  const currentX = e.clientX - rect.left;
+  const currentY = e.clientY - rect.top;
+  drawingPlatform.width = currentX - drawingPlatform.x;
+  drawingPlatform.height = currentY - drawingPlatform.y;
+  drawLevel(levels[currentLevel]);
+  // Draw current platform rectangle as outline
+  ctx.strokeStyle = 'lime';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(drawingPlatform.x, drawingPlatform.y, drawingPlatform.width, drawingPlatform.height);
+});
+
+canvas.addEventListener('mouseup', e => {
+  if(!drawMode || !drawingPlatform) return;
+  // Normalize width and height for negative drag direction
+  let {x, y, width, height} = drawingPlatform;
+  if(width < 0) {
+    x += width;
+    width = Math.abs(width);
+  }
+  if(height < 0) {
+    y += height;
+    height = Math.abs(height);
+  }
+  // Add new platform (minimum size check)
+  if(width > 10 && height > 5) {
+    levels[currentLevel].platforms.push({x, y, width, height});
+  }
+  drawingPlatform = null;
+  drawLevel(levels[currentLevel]);
+});
+
+// --- GAME LOADER ---
+
+let gameMode = 'platformer';
+
+function loadGame(gameName) {
+  gameMode = gameName;
+  // Clear event listeners and timers first
+  window.removeEventListener('keydown', handleSnakeKey);
+  clearInterval(snakeInterval);
+
+  // Reset canvas & gameArea to default
+  canvas.style.display = 'block';
+  canvas.width = 800;
+  canvas.height = 400;
+  gameArea.innerHTML = '';
+  gameArea.appendChild(info);
+  gameArea.appendChild(canvas);
+  
+  if(gameName === 'ticTacToe') {
+    setActiveButton(btnTicTacToe);
+    canvas.style.display = 'none';
+    createTTTBoard();
+    // Add click listener for restart on game over
+    tttBoardElem.addEventListener('click', tttBoardClick);
+  } else if(gameName === 'snake') {
+    setActiveButton(btnSnake);
+    canvas.style.width = '400px';
+    canvas.style.height = '400px';
+    canvas.width = 400;
+    canvas.height = 400;
+    canvas.style.display = 'block';
+    info.textContent = 'Snake - Use Arrow Keys to move. Eat the red food!';
+    gameArea.appendChild(info);
+    gameArea.appendChild(canvas);
+    initSnake();
+    window.addEventListener('keydown', handleSnakeKey);
+  } else if(gameName === 'platformer') {
+    setActiveButton(btnPlatformer);
+    currentLevel = 0;
+    resetPlayer();
+    canvas.width = 800;
+    canvas.height = 400;
+    info.textContent = 'Use ← → to move, ↑ or Space to jump. Reach the flag and avoid enemies!';
+    canvas.style.display = 'block';
+    gameArea.appendChild(info);
+    gameArea.appendChild(canvas);
+    platformer();
+  }
+}
+
+// Load platformer on page load
+loadGame('platformer');
+</script>
+ 
+</body>
+</html>
