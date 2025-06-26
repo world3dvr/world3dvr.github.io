@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>RTS Prototype</title>
+<style>
+  body,html {
+    margin:0; padding:0; overflow:hidden;
+    background:#4c9f0c; font-family:Arial,sans-serif;
+  }
+  canvas {
+    display:block;
+    background:#4c9f0c;
+  }
+  #ui {
+    position: fixed; top: 10px; right: 10px;
+    background: rgba(255,255,255,0.9);
+    padding: 10px; border-radius: 6px;
+    width: 220px; box-shadow: 0 0 10px #0008;
+  }
+  #ui button {
+    width: 100%; margin-top: 8px;
+    padding: 8px; font-weight: bold;
+    cursor: pointer;
+  }
+  #info {
+    position: fixed; bottom: 10px; left: 10px;
+    background: rgba(255,255,255,0.9);
+    padding: 6px 10px; border-radius: 5px;
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="gameCanvas"></canvas>
+
+<div id="ui">
+  <h3>Player Info</h3>
+  <div>Resources: <span id="resCount">300</span></div>
+  <div>Selected Units: <span id="selectedCount">0</span></div>
+  <button id="buildBaseBtn">Build Base (150)</button>
+  <button id="trainWorkerBtn">Train Worker (50)</button>
+  <button id="trainSoldierBtn">Train Soldier (100)</button>
+</div>
+
+<div id="info">
+  Left click: Select units<br>
+  Shift+Click: Multi-select<br>
+  Right click: Move / Gather / Attack
+</div>
+
+<script>
+(() => {
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const UI = {
+    resCount: document.getElementById('resCount'),
+    selectedCount: document.getElementById('selectedCount'),
+    buildBaseBtn: document.getElementById('buildBaseBtn'),
+    trainWorkerBtn: document.getElementById('trainWorkerBtn'),
+    trainSoldierBtn: document.getElementById('trainSoldierBtn')
+  };
+
+  const UNIT_TYPES = {
+    WORKER: 'worker',
+    SOLDIER: 'soldier'
+  };
+
+  const BASE_SIZE = 50;
+  const UNIT_RADIUS = 12;
+  const RESOURCE_RADIUS = 20;
+
+  function distance(x1, y1, x2, y2) {
+    return Math.hypot(x2 - x1, y2 - y1);
+  }
+
+  class Resource {
+    constructor(x, y) {
+      this.x = x;
+      this.y = y;
+      this.radius = RESOURCE_RADIUS;
+      this.amount = 500;
+    }
+    draw() {
+      if (this.amount > 0) {
+        ctx.fillStyle = '#d4af37';
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#a88626';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+      }
+    }
+  }
+
+  class Base {
+    constructor(x, y, owner = 'player') {
+      this.x = x;
+      this.y = y;
+      this.size = BASE_SIZE;
+      this.owner = owner;
+      this.trainQueue = [];
+      this.trainCooldown = 0;
+    }
+    draw() {
+      ctx.fillStyle = this.owner === 'player' ? '#654321' : '#882222';
+      ctx.fillRect(this.x - this.size / 2, this.y - this.size / 2, this.size, this.size);
+      ctx.strokeStyle = 'black';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(this.x - this.size / 2, this.y - this.size / 2, this.size, this.size);
+      ctx.fillStyle = 'white';
+      ctx.font = 'bold 14px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(this.owner === 'player' ? 'Base' : 'Enemy', this.x, this.y + 5);
+    }
+    update(dt, game) {
+      if (this.trainQueue.length > 0) {
+        this.trainCooldown -= dt;
+        if (this.trainCooldown <= 0) {
+          const unitType = this.trainQueue.shift();
+          this.trainCooldown = 3000; // 3 seconds train time
+          const spawnX = this.x + this.size;
+          const spawnY = this.y;
+          const color = this.owner === 'player' ? 'blue' : 'red';
+          const arr = this.owner === 'player' ? game.units : game.enemies;
+          arr.push(new Unit(spawnX, spawnY, unitType, color, this.owner));
+        }
+      }
+    }
+    queueTrain(unitType) {
+      this.trainQueue.push(unitType);
+    }
+  }
+
+  class Unit {
+    constructor(x, y, type, color, owner) {
+      this.x = x;
+      this.y = y;
+      this.type = type;
+      this.color = color;
+      this.owner = owner;
+      this.radius = UNIT_RADIUS;
+      this.speed = type === UNIT_TYPES.WORKER ? 1.2 : 1.8;
+      this.destX = x;
+      this.destY = y;
+      this.state = 'idle'; // idle, moving, gathering, returning, attacking
+      this.targetResource = null;
+      this.carrying = 0;
+      this.attackRange = 25;
+      this.attackDamage = type === UNIT_TYPES.SOLDIER ? 10 : 0;
+      this.attackCooldown = 0;
+      this.health = type === UNIT_TYPES.SOLDIER ? 50 : 30;
+      this.maxHealth = this.health;
+      this.selected = false;
+      this.targetEnemy = null;
+      this.gatherTimer = 0;
+    }
+
+    draw() {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+      ctx.fillStyle = this.selected ? 'yellow' : this.color;
+      ctx.fill();
+      ctx.strokeStyle = 'black';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      if (this.type === UNIT_TYPES.SOLDIER) {
+        // Health bar
+        const healthPct = this.health / this.maxHealth;
+        ctx.fillStyle = 'red';
+        ctx.fillRect(this.x - this.radius, this.y - this.radius - 10, this.radius * 2, 4);
+        ctx.fillStyle = 'lime';
+        ctx.fillRect(this.x - this.radius, this.y - this.radius - 10, this.radius * 2 * healthPct, 4);
+      }
+
+      if (this.type === UNIT_TYPES.WORKER && this.carrying > 0) {
+        // Gold carried indicator
+        ctx.fillStyle = '#d4af37';
+        ctx.beginPath();
+        ctx.arc(this.x, this.y - this.radius - 8, 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = 'black';
+        ctx.stroke();
+      }
+    }
+
+    update(dt, game) {
+      this.attackCooldown -= dt;
+
+      switch (this.state) {
+        case 'moving':
+          this._move();
+          if (distance(this.x, this.y, this.destX, this.destY) < this.speed) {
+            if (this.type === UNIT_TYPES.WORKER && this.targetResource && this.targetResource.amount > 0) {
+              this.state = 'gathering';
+              this.gatherTimer = 0;
+            } else if (this.type === UNIT_TYPES.SOLDIER && this.targetEnemy && this.targetEnemy.health > 0) {
+              this.state = 'attacking';
+            } else {
+              this.state = 'idle';
+              this.targetResource = null;
+              this.targetEnemy = null;
+            }
+          }
+          break;
+
+        case 'gathering':
+          if (this.targetResource && this.targetResource.amount > 0) {
+            this.gatherTimer += dt;
+            if (this.gatherTimer >= 2000) { // gather every 2 seconds
+              const gathered = Math.min(10, this.targetResource.amount);
+              this.targetResource.amount -= gathered;
+              this.carrying += gathered;
+              this.gatherTimer = 0;
+              this.state = 'returning';
+              // set destination to nearest own base
+              const base = game.bases[0];
+              this.destX = base.x;
+              this.destY = base.y;
+              this.targetResource = null;
+            }
+          } else {
+            this.state = 'idle';
+            this.targetResource = null;
+          }
+          break;
+
+        case 'returning':
+          this._move();
+          if (distance(this.x, this.y, this.destX, this.destY) < this.speed) {
+            if (this.carrying > 0) {
+              game.playerResources += this.carrying;
+              UI.resCount.textContent = game.playerResources;
+              this.carrying = 0;
+            }
+            this.state = 'idle';
+          }
+          break;
+
+        case 'attacking':
+          if (this.targetEnemy && this.targetEnemy.health > 0) {
+            const distToEnemy = distance(this.x, this.y, this.targetEnemy.x, this.targetEnemy.y);
+            if (distToEnemy > this.attackRange) {
+              this.destX = this.targetEnemy.x;
+              this.destY = this.targetEnemy.y;
+              this._move();
+            } else {
+              if (this.attackCooldown <= 0) {
+                this.targetEnemy.health -= this.attackDamage;
+                this.attackCooldown = 1000; // 1 second cooldown
+                if (this.targetEnemy.health <= 0) {
+                  // Remove dead enemy from array
+                  let arr = this.targetEnemy.owner === 'player' ? game.units : game.enemies;
+                  const idx = arr.indexOf(this.targetEnemy);
+                  if (idx > -1) arr.splice(idx, 1);
+                  this.state = 'idle';
+                  this.targetEnemy = null;
+                }
+              }
+            }
+          } else {
+            this.state = 'idle';
+            this.targetEnemy = null;
+          }
+          break;
+
+        case 'idle':
+        default:
+          // Do nothing
+          break;
+      }
+    }
+
+    _move() {
+      const dx = this.destX - this.x;
+      const dy = this.destY - this.y;
+      const dist = Math.hypot(dx, dy);
+      if (dist < this.speed || dist === 0) {
+        this.x = this.destX;
+        this.y = this.destY;
+        return;
+      }
+      const vx = (dx / dist) * this.speed;
+      const vy = (dy / dist) * this.speed;
+      this.x += vx;
+      this.y += vy;
+    }
+  }
+
+  // Game state
+  const game = {
+    playerResources: 300,
+    bases: [],
+    enemyBases: [],
+    units: [],
+    enemies: [],
+    resources: [],
+    selectedUnits: [],
+    buildMode: false,
+  };
+
+  // Helper: check if position inside any base (to avoid building on top)
+  function insideBase(x, y, radius) {
+    for (const base of [...game.bases, ...game.enemyBases]) {
+      if (
+        x > base.x - base.size / 2 - radius &&
+        x < base.x + base.size / 2 + radius &&
+        y > base.y - base.size / 2 - radius &&
+        y < base.y + base.size / 2 + radius
+      ) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // Handle input
+
+  canvas.addEventListener('mousedown', (e) => {
+    if (e.button !== 0) return; // left click only here
+    const x = e.clientX;
+    const y = e.clientY;
+
+    if (game.buildMode) {
+      if (!insideBase(x, y, BASE_SIZE / 2)) {
+        game.bases.push(new Base(x, y, 'player'));
+        game.playerResources -= 150;
+        UI.resCount.textContent = game.playerResources;
+        game.buildMode = false;
+      }
+      return;
+    }
+
+    // Check for unit click
+    let clickedUnit = null;
+    for (const unit of game.units) {
+      if (distance(x, y, unit.x, unit.y) <= unit.radius) {
+        clickedUnit = unit;
+        break;
+      }
+    }
+
+    if (clickedUnit) {
+      if (e.shiftKey) {
+        clickedUnit.selected = !clickedUnit.selected;
+      } else {
+        // Deselect all
+        for (const u of game.units) u.selected = false;
+        clickedUnit.selected = true;
+      }
+    } else {
+      // Clicked empty space — deselect unless shift held
+      if (!e.shiftKey) {
+        for (const u of game.units) u.selected = false;
+      }
+    }
+
+    updateSelectedUnits();
+  });
+
+  canvas.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    const x = e.clientX;
+    const y = e.clientY;
+
+    const selectedUnits = game.units.filter((u) => u.selected);
+
+    if (selectedUnits.length === 0) return;
+
+    // Check if right-clicked a resource
+    const resource = game.resources.find(
+      (r) => distance(x, y, r.x, r.y) <= r.radius && r.amount > 0
+    );
+    // Check if right-clicked enemy unit or enemy base
+    let enemyTarget = null;
+    for (const enemyUnit of game.enemies) {
+      if (distance(x, y, enemyUnit.x, enemyUnit.y) <= enemyUnit.radius) {
+        enemyTarget = enemyUnit;
+        break;
+      }
+    }
+    if (!enemyTarget) {
+      for (const base of game.enemyBases) {
+        if (
+          x >= base.x - base.size / 2 &&
+          x <= base.x + base.size / 2 &&
+          y >= base.y - base.size / 2 &&
+          y <= base.y + base.size / 2
+        ) {
+          enemyTarget = base;
+          break;
+        }
+      }
+    }
+
+    for (const unit of selectedUnits) {
+      if (unit.type === UNIT_TYPES.WORKER && resource) {
+        // Send worker to gather resource
+        unit.destX = resource.x;
+        unit.destY = resource.y;
+        unit.targetResource = resource;
+        unit.state = 'moving';
+      } else if (
+        unit.type === UNIT_TYPES.SOLDIER &&
+        enemyTarget &&
+        enemyTarget.health !== undefined
+      ) {
+        // Attack enemy unit
+        unit.targetEnemy = enemyTarget;
+        unit.state = 'attacking';
+      } else if (
+        unit.type === UNIT_TYPES.SOLDIER &&
+        enemyTarget &&
+        enemyTarget.size !== undefined
+      ) {
+        // Attack enemy base (no health for base, so just move on top)
+        unit.destX = enemyTarget.x;
+        unit.destY = enemyTarget.y;
+        unit.targetEnemy = null;
+        unit.state = 'moving';
+      } else {
+        // Move command
+        unit.destX = x;
+        unit.destY = y;
+        unit.targetResource = null;
+        unit.targetEnemy = null;
+        unit.state = 'moving';
+      }
+    }
+  });
+
+  // UI buttons
+  UI.buildBaseBtn.onclick = () => {
+    if (game.playerResources >= 150) {
+      game.buildMode = true;
+    }
+  };
+  UI.trainWorkerBtn.onclick = () => {
+    if (game.bases.length && game.playerResources >= 50) {
+      game.playerResources -= 50;
+      UI.resCount.textContent = game.playerResources;
+      game.bases[0].queueTrain(UNIT_TYPES.WORKER);
+    }
+  };
+  UI.trainSoldierBtn.onclick = () => {
+    if (game.bases.length && game.playerResources >= 100) {
+      game.playerResources -= 100;
+      UI.resCount.textContent = game.playerResources;
+      game.bases[0].queueTrain(UNIT_TYPES.SOLDIER);
+    }
+  };
+
+  // Enemy AI: workers gather resources, soldiers attack player base & units
+  function enemyAI() {
+    for (const enemy of game.enemies) {
+      if (enemy.owner !== 'enemy') continue;
+
+      if (enemy.type === UNIT_TYPES.WORKER) {
+        if (enemy.state === 'idle') {
+          // Find resource to gather
+          const resource = game.resources.find((r) => r.amount > 0);
+          if (resource) {
+            enemy.destX = resource.x;
+            enemy.destY = resource.y;
+            enemy.targetResource = resource;
+            enemy.state = 'moving';
+          }
+        }
+        if (enemy.state === 'returning' && distance(enemy.x, enemy.y, game.enemyBases[0].x, game.enemyBases[0].y) < enemy.speed) {
+          // Deliver gathered gold to enemy base
+          enemy.carrying = 0; // enemy doesn't actually store resources here
+          enemy.state = 'idle';
+        }
+      }
+
+      if (enemy.type === UNIT_TYPES.SOLDIER) {
+        if (enemy.state === 'idle') {
+          // Attack closest player unit or base
+          let target = null;
+          if (game.units.length > 0) {
+            target = game.units[0];
+          } else if (game.bases.length > 0) {
+            target = game.bases[0];
+          }
+          if (target) {
+            enemy.targetEnemy = target;
+            enemy.state = 'attacking';
+          }
+        }
+      }
+    }
+  }
+
+  // Initialize game objects
+
+  // Resources scattered
+  for (let i = 0; i < 5; i++) {
+    game.resources.push(new Resource(200 + i * 150, 200 + (i % 2) * 100));
+  }
+
+  // Player base
+  game.bases.push(new Base(100, canvas.height - 100, 'player'));
+
+  // Enemy base
+  game.enemyBases.push(new Base(canvas.width - 100, 100, 'enemy'));
+
+  // Enemy units - workers and soldiers
+  for (let i = 0; i < 3; i++) {
+    game.enemies.push(new Unit(canvas.width - 150, 100 + i * 30, UNIT_TYPES.WORKER, 'red', 'enemy'));
+  }
+  for (let i = 0; i < 2; i++) {
+    game.enemies.push(new Unit(canvas.width - 200, 130 + i * 30, UNIT_TYPES.SOLDIER, 'darkred', 'enemy'));
+  }
+
+  // Update selection display
+  function updateSelectedUnits() {
+    game.selectedUnits = game.units.filter((u) => u.selected);
+    UI.selectedCount.textContent = game.selectedUnits.length;
+  }
+
+  // Main loop
+  let last = performance.now();
+  function gameLoop(now) {
+    const dt = now - last;
+    last = now;
+
+    // Update bases
+    for (const base of game.bases) base.update(dt, game);
+    for (const base of game.enemyBases) base.update(dt, game);
+
+    // Update units
+    for (const unit of game.units) unit.update(dt, game);
+    for (const enemy of game.enemies) enemy.update(dt, game);
+
+    enemyAI();
+
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw resources
+    for (const resource of game.resources) resource.draw();
+
+    // Draw bases
+    for (const base of game.bases) base.draw();
+    for (const base of game.enemyBases) base.draw();
+
+    // Draw units
+    for (const unit of game.units) unit.draw();
+    for (const enemy of game.enemies) enemy.draw();
+
+    requestAnimationFrame(gameLoop);
+  }
+
+  // Start with one worker and one soldier for player
+  game.units.push(new Unit(150, canvas.height - 150, UNIT_TYPES.WORKER, 'blue', 'player'));
+  game.units.push(new Unit(180, canvas.height - 150, UNIT_TYPES.SOLDIER, 'blue', 'player'));
+
+  game.playerResources = 300;
+  UI.resCount.textContent = game.playerResources;
+
+  gameLoop(performance.now());
+})();
+</script>
+
+</body>
+</html>
