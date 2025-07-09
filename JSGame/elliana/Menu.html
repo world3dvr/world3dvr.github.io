@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title> Menu </title>
+<script src="https://simplycodingcourses.com/files/simplyjs/simply.js"></script>
+<script>
+function start(){
+sjs.open();
+var menu_text = new sjs.Text("Main Menu", 28, "blue");
+menu_text.centerH();
+var explain = new sjs.Text("Use arrow keys to move. Bounce the ball");
+explain.centerH();
+explain.offset(0,30);
+var startBtn = new sjs.Button("Start", function(){
+window.location = "Pong.html";
+});
+startBtn.center()
+var start = new sjs.Text("Created by Elliana Williams", 20, "red");
+start.center().bottom();
+} //end start
+</script>
+</head>
+<body onload="start()">
+<h1> Menu </h1>
+
+<div id="target" style="margin:auto;background:grey;"></div>
+</body>
+</html>

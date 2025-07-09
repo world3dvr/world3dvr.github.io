@@ -1,0 +1,84 @@
+<html>
+<head>
+<title> Pong </title>
+<script src="https://simplycodingcourses.com/files/simplyjs/simply.js"></script>
+<script>
+    function upkey()
+{
+    alert("hi i am bob");
+}
+function start  (){ 
+    sjs.open ("target" ,500 ,400);
+    var ball=new sjs.Image("Images/volleyball.png")
+ball.type = "ball";
+ball.setSize(50,50);
+ball.center();
+ball.friction = 0;
+ball.bounce();
+ball.pushRight(7);     //how fast moves right
+ball.pushUp(7)     //how fast moves up
+//ballhttps
+//paddles
+
+var paddle1 = new sjs.Image("Images/paddle.png");
+ paddle1.type = "paddle";
+paddle1.setSize(20, 100);      
+ paddle1.center()
+ paddle1.left()
+
+
+ //add another paddle
+ var paddle2 = new sjs.Image("Images/paddle2.png");
+paddle2.setSize(20, 100)
+paddle2.type = "paddle";
+ paddle2.center()
+  paddle2.right()
+ //score
+  var score = 0;
+var score_txt = new sjs.Text("Mails Moneyyyy: 0", 21, "orange");
+//Sounds
+
+  //key pressing
+
+
+
+  sjs.keyDown(UP_KEY, function () {
+    paddle1.pushUp();
+    paddle2.pushUp();
+  }) 
+   sjs.keyDown(DOWN_KEY, function () {
+     paddle1.pushDown();
+    paddle2.pushDown();
+
+})
+
+//on hit
+sjs.onHit("ball", "paddle", function (ball, paddle) {score = score + 1;
+score_txt.setText("Mails Moneyyyy: " + score);
+ sjs.bounceOff(ball, paddle);
+var soundEffect = new Audio("Music/doh.mp3");
+ soundEffect.play();
+sjs.onHit("ball", ["left_screen", "right_screen"], function (){
+//when the sides are hit 
+// alert ("i am .... dissapointed"); 
+score = score -1;
+score_txt.setText("Mails Moneyyyy: " + score);
+ball.sx = 0;
+ball.sy = 0;
+ball.center();
+
+}
+
+) 
+} )
+
+}//end start
+
+
+</script>
+</head>
+<body onload="start()">
+<h1> Pong Game </h1>
+<div id="target" style="margin:auto;background:grey;"></div>
+</body>
+</html>

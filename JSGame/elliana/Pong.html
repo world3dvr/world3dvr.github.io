@@ -1,0 +1,119 @@
+<html>
+    <head>
+        <title> Pong </title>
+        <script src="https://simplycodingcourses.com/files/simplyjs/simply.js"></script>
+        <script>
+        function start(){
+            sjs.open("target",500,400);
+            //ball object and properties below
+            var ball1 = new sjs.Image("images/planet.png");
+            ball1.type = "ball";
+            ball1.setSize(75,75);
+            ball1.center();
+            ball1.friction = 0;
+            ball1.bounce();
+            ball1.pushRight(3);
+            ball1.pushUp(4);
+            
+            //paddle objects and properties below
+
+            //paddle1
+
+            var paddle1 = new sjs.Image("images/red.png");
+            paddle1.type = "paddle";
+            paddle1.centerH();
+            paddle1.setSize(100,10);
+
+            //paddle2
+
+            var paddle2 = new sjs.Image("images/red.png");
+            paddle2.type = "paddle";
+            paddle2.center().bottom();
+            paddle2.setSize(100,10);
+
+            //movement below
+
+            sjs.keyDown(LEFT_KEY, function(){
+                paddle1.pushLeft();
+                paddle2.pushLeft();
+            });
+            sjs.keyDown(RIGHT_KEY, function(){
+                paddle1.pushRight();
+                paddle2.pushRight();
+            });
+
+            //sound
+
+            var soundEffect = new Audio("music/techno.mp3");
+            sjs.onHit("ball","paddle", function(ball,paddle){
+                sjs.bounceOff(ball,paddle);
+                score = score + 1;
+                score_txt.setText("Score: "+score);
+                soundEffect.play();
+                 if(score==5){
+                    var ball2 = new sjs.Image("images/planet.png");
+                    ball2.type = "ball";
+                    ball2.setSize(75,75);
+                    ball2.center();
+                    ball2.friction = 0;
+                    ball2.bounce();
+                    ball2.pushRight(3);
+                    ball2.pushUp(4);
+                }
+                if(score==10){
+                    var ball3 = new sjs.Image("images/spike.png");
+                    ball3.type = "newball";
+                    ball3.setSize(100,100);
+                    ball3.center();
+                    ball3.friction = 0;
+                    ball3.bounce();
+                    ball3.pushRight(3);
+                    ball3.pushUp(4);
+                }
+                sjs.onHit("newball","paddle", function(ball,paddle){
+                sjs.bounceOff(ball,paddle);
+                score = score + 5;
+                score_txt.setText("Score: "+score);
+                soundEffect.play();
+
+            });
+            sjs.onHit("ball",["top_screen","bottom_screen"], function(){
+                console.log("here");
+                window.location = "Gameover.html";
+            });
+            sjs.onHit("newball",["top_screen","bottom_screen"], function(){
+                console.log("newball");
+                window.location = "Gameover.html";
+            });
+            });
+           
+            // sjs.onHit("newball","paddle", function(ball,paddle){
+            //     sjs.bounceOff(ball,paddle);
+            //     score = score + 5;
+            //     score_txt.setText("Score: "+score);
+            //     soundEffect.play();
+
+            // });
+            // sjs.onHit("ball","top_screen", function(){
+            //     console.log("here");
+            //     window.location = "Gameover.html";
+            // });
+            // sjs.onHit("newball",["top_screen","bottom_screen"], function(){
+            //     console.log("newball");
+            //     window.location = "Gameover.html";
+            // });
+            //score code
+
+            var score = 0;
+            var score_txt = new sjs.Text("Score : 0", 21, "orange");
+        
+        } // end of start function
+
+        </script>
+        
+    </head>
+    <body onload="start()">
+        <h1> Pong </h1>
+        <div id="target" style="margin:auto;background:grey;"></div>
+    </body>
+</html>

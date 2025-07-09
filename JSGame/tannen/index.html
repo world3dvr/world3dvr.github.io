@@ -1,0 +1,73 @@
+<html>
+    <head>
+        <title> Pong </title>
+        <script src="https://simplycodingcourses.com/files/simplyjs/simply.js"></script>
+        <script>
+            
+                
+            
+            
+            function start(){
+                sjs.open(target,500,400);
+                //ball object and properties
+                var ball  = new sjs.Image("https://images.stockcake.com/public/4/f/4/4f410710-d10b-4603-92c8-c3bf216c5f6e_large/pinecone-on-wood-stockcake.jpg")
+                ball.type = "ball";
+                ball.setSize(100,100);
+                ball.center();
+                ball.friction = 0;
+                ball.pushRight(4);
+                ball.bounce();
+                ball.pushRight(4);
+                ball.pushUp(4);
+
+                //paddles
+                var paddle1 = new sjs.Image("images/tannen.webp");
+                paddle1.type = "paddle";
+                paddle1.setSize(125,20);
+                paddle1.center().top();
+                //add another paddle
+                var paddle2 = new sjs.Image("images/tannen.webp");
+                paddle2.type = "paddle";
+                paddle2.setSize(125,20);
+                paddle2.center().bottom();
+                var score = 0;
+                var score_txt = new sjs.Text("fertree 0",21,"orange");
+
+               
+
+
+                //key pressing
+                sjs.keyDown(LEFT_KEY, function(){
+                    paddle1.pushLeft();
+                    paddle2.pushLeft();
+                });
+                sjs.keyDown(RIGHT_KEY, function(){
+                    paddle1.pushRight();
+                    paddle2.pushRight();
+                });
+                            
+                        
+                sjs.onHit("ball","paddle", function(ball,paddle) {
+                    sjs.bounceOff(ball, paddle);
+                    score = score + 1;
+                    score_txt.setText("fertree: " + score);
+                     var soundEffect = new Audio("Music/fox.mp3");
+
+                    soundEffect.play();
+                });
+                                    var soundEffect = new Audio("Music/fox3.mp3");
+
+                sjs.onHit("ball", ["top_screen", "bottom_screen"], function (){
+                    
+                    soundEffect.play();
+                    score = 0;
+                    ball.center();
+                });
+            }
+        </script>
+    </head>
+    <body onload="start()">
+        <h1> Pong Game </h1>
+        <div id="target" style="margin:auto;background:grey;"></div>
+    </body>
+</html>

@@ -1,0 +1,83 @@
+<html>
+<head>
+<title> Pong </title>
+<script src="https://simplycodingcourses.com/files/simplyjs/simply.js"></script>
+<script>
+function upkey()
+{
+    
+}
+function start(){
+sjs.open("target" ,500,400);
+//ball object properties
+var ball = new sjs.Image("Images/pizza.png") 
+ball.type = "ball";
+ball.setSize(69,69);
+ball.center();
+ball.friction = 0;
+ball.pushRight(5); //how fast moves right
+ball.bounce();
+ball.pushUp(5); //how fast moves up
+//paddles
+var paddle1 = new sjs. Image("Images/paddle.png")
+paddle1.type= 'paddle'
+paddle1.setSize(20,100);
+paddle1.center().left();
+//add another paddle
+var paddle2 = new sjs. Image("Images/paddle2.png")
+paddle2.type= 'paddle'
+paddle2.setSize(20,100);
+paddle2.center().right();
+//score1
+var score1 = 0;
+var score1_txt = new sjs.Text("0", 25, "blue");
+//score2
+var score2 = 0;
+var score2_txt = new sjs.Text("0", 25, "red")
+score2_txt.right()
+
+
+
+
+//key pressing
+sjs.keyDown(UP_KEY, function () {
+paddle1.pushUp();
+paddle2.pushUp();
+}); 
+
+sjs.keyDown(DOWN_KEY, function () {
+paddle1.pushDown();
+paddle2.pushDown();
+}); 
+
+//on hit
+sjs.onHit("ball", "paddle", function (ball, paddle) {
+  sjs.bounceOff(ball, paddle);
+ if (paddle == paddle1) {
+    score1 = score1 + 1;
+    score1_txt.setText(" " + score1);
+ } else {
+    score2 = score2 + 1;
+    score2_txt.setText(" " + score2)
+     var soundEffect = new Audio("Music/reminder.mp3")
+soundEffect.play();
+}
+})
+
+sjs.onHit("ball", ["left_screen", "right_screen"], function(){
+   alert("you lost");
+
+   ball.center();
+   ball.sx = 0;
+   ball.sy = 0;
+   ball.pushLeft(7);
+   ball.pushUp(3);
+ });
+//add push for other direction
+}//end start
+</script>
+</head>
+<body onload="start()">
+<h1> Pong </h1>
+<div id="target" style="margin:auto;background:rgb(4, 228, 244);"></div>
+</body>
