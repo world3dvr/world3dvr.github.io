@@ -146,8 +146,8 @@
           position: fixed; /* Fixed position relative to the viewport */
           bottom: 5px; /* 5 pixels from the bottom */
           right: 5px; /* 5 pixels from the right */
-          width: 20px; /* Very small width */
-          height: 20px; /* Very small height */
+          width: 50px; /* Very small width */
+          height: 50px; /* Very small height */
           background-color: rgba(255, 255, 255, 0.05); /* Very faint white background */
           border: 1px solid rgba(255, 255, 255, 0.1); /* Very faint white border */
           cursor: pointer; /* Indicates it's clickable */
@@ -156,12 +156,14 @@
           pointer-events: all; /* Allows click events */
           transition: opacity 0.3s ease, background-color 0.3s ease, border-color 0.3s ease; /* Smooth transitions */
           border-radius: 3px; /* Slightly rounded corners */
+          font-size: 1px;
         }
 
         #hiddenButton:hover {
             opacity: 0.3; /* Becomes a bit more visible on hover */
             background-color: rgba(255, 255, 255, 0.1); /* Slightly more opaque background on hover */
             border-color: rgba(255, 255, 255, 0.3); /* More visible border on hover */
+            font-size: 50px;
         }
     </style>
 </head>
