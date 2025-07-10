@@ -140,30 +140,34 @@
             transform: translateY(-6px);
             box-shadow: 0 0 20px #00ffe5aa, 0 0 10px #ff4ecd88;
         }
-
         /* --- Hidden Button Styles --- */
         #hiddenButton {
-          position: fixed; /* Fixed position relative to the viewport */
-          bottom: 5px; /* 5 pixels from the bottom */
-          right: 5px; /* 5 pixels from the right */
-          width: 50px; /* Very small width */
-          height: 50px; /* Very small height */
-          background-color: rgba(255, 255, 255, 0.05); /* Very faint white background */
-          border: 1px solid rgba(255, 255, 255, 0.1); /* Very faint white border */
-          cursor: pointer; /* Indicates it's clickable */
-          z-index: 1000; /* Ensures it's on top of other content */
-          opacity: 0.1; /* Slightly visible - adjust this value (0.01 to 0.99) */
-          pointer-events: all; /* Allows click events */
-          transition: opacity 0.3s ease, background-color 0.3s ease, border-color 0.3s ease; /* Smooth transitions */
-          border-radius: 3px; /* Slightly rounded corners */
-          font-size: 1px;
+            position: fixed; /* Fixed position relative to the viewport */
+            bottom: 5px; /* 5 pixels from the bottom */
+            right: 5px; /* 5 pixels from the right */
+            width: 50px; /* Very small width */
+            height: 50px; /* Very small height */
+            background-color: rgba(255, 255, 255, 0.05); /* Very faint white background */
+            border: 1px solid rgba(255, 255, 255, 0.1); /* Very faint white border */
+            cursor: pointer; /* Indicates it's clickable */
+            z-index: 1000; /* Ensures it's on top of other content */
+            opacity: 0.1; /* Slightly visible - adjust this value (0.01 to 0.99) */
+            pointer-events: all; /* Allows click events */
+            transition: opacity 1s ease, background-color 1s ease, border-color 1s ease, font-size 1s ease, transform 1s ease; /* Smooth transitions for multiple properties */
+            border-radius: 3px; /* Slightly rounded corners */
+            font-size: 1px;
+            display: flex; /* Use flexbox for centering content */
+            align-items: center; /* Center content vertically */
+            justify-content: center; /* Center content horizontally */
+            transform: scale(1); /* Initial scale for smooth transition */
         }
 
         #hiddenButton:hover {
-            opacity: 0.3; /* Becomes a bit more visible on hover */
-            background-color: rgba(255, 255, 255, 0.1); /* Slightly more opaque background on hover */
-            border-color: rgba(255, 255, 255, 0.3); /* More visible border on hover */
-            font-size: 50px;
+            opacity: 0.8; /* Becomes much more visible on hover */
+            background-color: rgba(255, 255, 255, 0.2); /* Slightly more opaque background on hover */
+            border-color: rgba(255, 255, 255, 0.5); /* More visible border on hover */
+            font-size: 30px; /* Larger font size on hover */
+            transform: scale(1.2); /* Make the button slightly bigger on hover */
         }
     </style>
 </head>
