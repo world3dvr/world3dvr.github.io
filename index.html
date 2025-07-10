@@ -1,229 +1,250 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Summer Camps</title>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&family=Press+Start+2P&display=swap" rel="stylesheet">
-  <style>
-    /* Reset */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    <meta charset="UTF-8">
+    <title>Summer Camps</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        /* Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    html, body {
-      height: 100%;
-      overflow: hidden;
-      font-family: 'Orbitron', sans-serif;
-      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-      background-size: 400% 400%;
-      animation: gradientShift 15s ease infinite;
-      color: white;
-    }
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Orbitron', sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            color: white;
+        }
 
-    @keyframes gradientShift {
-      0% {background-position: 0% 50%;}
-      50% {background-position: 100% 50%;}
-      100% {background-position: 0% 50%;}
-    }
+        @keyframes gradientShift {
+            0% {background-position: 0% 50%;}
+            50% {background-position: 100% 50%;}
+            100% {background-position: 0% 50%;}
+        }
 
-    .particles {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      z-index: 0;
-    }
+        .particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+        }
 
-    .container {
-      position: relative;
-      z-index: 2;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-      text-align: center;
-      padding: 2rem;
-    }
+        .container {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+            padding: 2rem;
+        }
 
-    @keyframes colorShift {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
+        @keyframes colorShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
 
-    h1 {
-      font-size: 3rem;
-      color: #ffffff;
-      background: linear-gradient(90deg, #ff4ecd, #00ffe5, #ffdc00, #ff4ecd);
-      background-size: 300% 300%;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      animation: colorShift 12s linear infinite;
-      text-shadow: 0 0 15px #ff4ecd, 0 0 30px #ff4ecd;
-      margin-bottom: 40px;
-    }
+        h1 {
+            font-size: 3rem;
+            color: #ffffff;
+            background: linear-gradient(90deg, #ff4ecd, #00ffe5, #ffdc00, #ff4ecd);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: colorShift 12s linear infinite;
+            text-shadow: 0 0 15px #ff4ecd, 0 0 30px #ff4ecd;
+            margin-bottom: 40px;
+        }
 
-    a {
-      text-decoration: none;
-      font-size: 1.2em;
-      font-weight: bold;
-      background: linear-gradient(90deg, #ff4ecd, #00ffe5, #ffdc00, #ff4ecd);
-      background-size: 300% 300%;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      animation: colorShift 10s linear infinite;
-      transition: text-shadow 0.3s ease;
-    }
+        a {
+            text-decoration: none;
+            font-size: 1.2em;
+            font-weight: bold;
+            background: linear-gradient(90deg, #ff4ecd, #00ffe5, #ffdc00, #ff4ecd);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: colorShift 10s linear infinite;
+            transition: text-shadow 0.3s ease;
+        }
 
-    a:hover {
-      text-shadow: 0 0 12px #00ffe5;
-    }
+        a:hover {
+            text-shadow: 0 0 12px #00ffe5;
+        }
 
-    /* Layout for links */
-    .link-sections {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      width: 100%;
-      max-width: 1000px;
-    }
+        /* Layout for links */
+        .link-sections {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 1000px;
+        }
 
-    .repo-button-wrapper {
-      width: 100%;
-      margin-bottom: 30px;
-    }
+        .repo-button-wrapper {
+            width: 100%;
+            margin-bottom: 30px;
+        }
 
-    .repo-button {
-  font-size: 1.8em;
-  padding: 20px 30px;
-  display: inline-block;
-  width: 100%;
-  max-width: 100%;
-  text-align: center;
-  border: 2px solid #00ffe5;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(6px);
-  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
-  color: white; /* ✅ Solid text color */
-  background-clip: border-box; /* reset clipping */
-  -webkit-text-fill-color: unset; /* disable transparent text */
-}
+        .repo-button {
+            font-size: 1.8em;
+            padding: 20px 30px;
+            display: inline-block;
+            width: 100%;
+            max-width: 100%;
+            text-align: center;
+            border: 2px solid #00ffe5;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(6px);
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+            color: white; /* ✅ Solid text color */
+            background-clip: border-box; /* reset clipping */
+            -webkit-text-fill-color: unset; /* disable transparent text */
+        }
 
-    .repo-button:hover {
-      background: rgba(0, 255, 229, 0.1);
-      transform: scale(1.02);
-      box-shadow: 0 0 25px #00ffe5aa, 0 0 15px #ff4ecd88;
-    }
+        .repo-button:hover {
+            background: rgba(0, 255, 229, 0.1);
+            transform: scale(1.02);
+            box-shadow: 0 0 25px #00ffe5aa, 0 0 15px #ff4ecd88;
+        }
 
-    ul.link-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 20px;
-      width: 100%;
-      list-style: none;
-    }
+        ul.link-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            width: 100%;
+            list-style: none;
+        }
 
-    ul.link-grid li {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 12px;
-      padding: 20px;
-      backdrop-filter: blur(8px);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
+        ul.link-grid li {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            backdrop-filter: blur(8px);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
 
-    ul.link-grid li:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 0 20px #00ffe5aa, 0 0 10px #ff4ecd88;
-    }
-  </style>
+        ul.link-grid li:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 0 20px #00ffe5aa, 0 0 10px #ff4ecd88;
+        }
+
+        /* --- Hidden Button Styles --- */
+        #hiddenButton {
+            position: fixed; /* Fixed position relative to the viewport */
+            bottom: 5px; /* 5 pixels from the bottom */
+            right: 5px; /* 5 pixels from the right */
+            width: 20px; /* Very small width */
+            height: 20px; /* Very small height */
+            background-color: transparent; /* Completely transparent background */
+            border: none; /* No border */
+            cursor: pointer; /* Indicates it's clickable */
+            z-index: 1000; /* Ensures it's on top of other content */
+            opacity: 0; /* Make it completely invisible */
+            pointer-events: all; /* Allows click events even if transparent */
+            transition: opacity 0.3s ease; /* Smooth fade in/out on hover if desired (though hidden) */
+        }
+
+        /* Optional: for testing, you could make it visible on hover, but typically a hidden button wouldn't have this */
+        /* #hiddenButton:hover {
+            opacity: 0.1;
+            background-color: rgba(255, 255, 255, 0.1);
+        } */
+    </style>
 </head>
 <body>
 
-<!-- Particle Background -->
 <canvas id="particles" class="particles"></canvas>
 
 <div class="container">
-  <h1>Coding Summer Camps</h1>
+    <h1>Coding Summer Camps</h1>
 
-  <div class="link-sections">
-    <!-- Repo Button -->
-    <div class="repo-button-wrapper">
-      <a href="https://github.com/world3dvr/world3dvr.github.io" class="repo-button">Link To All Our Code</a>
+    <div class="link-sections">
+        <div class="repo-button-wrapper">
+            <a href="https://github.com/world3dvr/world3dvr.github.io" class="repo-button">Link To All Our Code</a>
+        </div>
+
+        <ul class="link-grid">
+            <li><a href="./3dWorld/index.html">3d World Games</a></li>
+            <li><a href="./codingAi/index.html">Coding with AI</a></li>
+            <li><a href="./JSGame/index.html">JS Game Design</a></li>
+        </ul>
     </div>
-
-    <!-- Grid of student links -->
-    <ul class="link-grid">
-      <li><a href="./3dWorld/index.html">3d World Games</a></li>
-      <li><a href="./codingAi/index.html">Coding with AI</a></li>
-      <li><a href="./JSGame/index.html">JS Game Design</a></li>
-    </ul>
-  </div>
 </div>
 
-<!-- Particle Script -->
+<a href="https://world3dvr.github.io/secret.html" id="hiddenButton" title="nothing"></a>
+
+
 <script>
-  const canvas = document.getElementById('particles');
-  const ctx = canvas.getContext('2d');
-  let particlesArray = [];
+    const canvas = document.getElementById('particles');
+    const ctx = canvas.getContext('2d');
+    let particlesArray = [];
 
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-
-  window.addEventListener('resize', () => {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    init();
-  });
 
-  class Particle {
-    constructor() {
-      this.x = Math.random() * canvas.width;
-      this.y = Math.random() * canvas.height;
-      this.size = Math.random() * 2 + 1;
-      this.speedX = Math.random() * 0.6 - 0.3;
-      this.speedY = Math.random() * 0.6 - 0.3;
-      this.color = 'rgba(255,255,255,' + (Math.random() * 0.5 + 0.3) + ')';
-    }
-
-    update() {
-      this.x += this.speedX;
-      this.y += this.speedY;
-
-      if (this.x > canvas.width || this.x < 0) this.speedX *= -1;
-      if (this.y > canvas.height || this.y < 0) this.speedY *= -1;
-    }
-
-    draw() {
-      ctx.beginPath();
-      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-      ctx.fillStyle = this.color;
-      ctx.fill();
-    }
-  }
-
-  function init() {
-    particlesArray = [];
-    for (let i = 0; i < 100; i++) {
-      particlesArray.push(new Particle());
-    }
-  }
-
-  function animate() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    particlesArray.forEach(p => {
-      p.update();
-      p.draw();
+    window.addEventListener('resize', () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        init();
     });
-    requestAnimationFrame(animate);
-  }
 
-  init();
-  animate();
+    class Particle {
+        constructor() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.size = Math.random() * 2 + 1;
+            this.speedX = Math.random() * 0.6 - 0.3;
+            this.speedY = Math.random() * 0.6 - 0.3;
+            this.color = 'rgba(255,255,255,' + (Math.random() * 0.5 + 0.3) + ')';
+        }
+
+        update() {
+            this.x += this.speedX;
+            this.y += this.speedY;
+
+            if (this.x > canvas.width || this.x < 0) this.speedX *= -1;
+            if (this.y > canvas.height || this.y < 0) this.speedY *= -1;
+        }
+
+        draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fillStyle = this.color;
+            ctx.fill();
+        }
+    }
+
+    function init() {
+        particlesArray = [];
+        for (let i = 0; i < 100; i++) {
+            particlesArray.push(new Particle());
+        }
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particlesArray.forEach(p => {
+            p.update();
+            p.draw();
+        });
+        requestAnimationFrame(animate);
+    }
+
+    init();
+    animate();
 </script>
 
 </body>
